@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 
 export function AddProduct() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(id);
+
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(isEditMode);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     productId: '',
@@ -71,9 +78,71 @@ export function AddProduct() {
       setCategories(res.data.categories || []);
     }).catch(console.error);
     
-    // Auto-generate product ID (mock logic)
-    setFormData(prev => ({ ...prev, productId: `GLD${Date.now().toString().slice(-4)}` }));
-  }, []);
+    if (isEditMode && id) {
+      // Fetch product data
+      api.get(`/products/${id}`).then((res) => {
+        const product = res.data.product;
+        if (product) {
+          setFormData({
+            productId: product.productId || '',
+            name: product.name || '',
+            category: product.category || '',
+            subCategory: product.subCategory || '',
+            brand: product.brand || '',
+            purity: product.purity || '',
+            hallmark: !!product.hallmark,
+            certificate: product.certificate || '',
+            weight: product.weight || 0,
+            weightUnit: product.weightUnit || 'grams',
+            coinWeight: product.coinWeight || '',
+            makingCharges: product.makingCharges || 0,
+            wastagePercentage: product.wastagePercentage || 0,
+            price: product.price || 0,
+            offerPrice: product.offerPrice || 0,
+            discount: product.discount || 0,
+            stock: product.stock || 0,
+            sku: product.sku || '',
+            gender: product.gender || 'Unisex',
+            occasion: (product.occasion || []).join(', '),
+            color: product.color || '',
+            material: product.material || '',
+            size: (product.size || []).join(', '),
+            lengthOptions: (product.lengthOptions || []).join(', '),
+            description: product.description || '',
+            features: (product.features || []).join(', '),
+            dimLength: product.dimensions?.length || '',
+            dimWidth: product.dimensions?.width || '',
+            freeShipping: product.shipping?.freeShipping ?? true,
+            estimatedDelivery: product.shipping?.estimatedDelivery || '3-5 Days',
+            cashOnDelivery: product.shipping?.cashOnDelivery ?? false,
+            returnAvailable: product.returnPolicy?.returnAvailable ?? true,
+            returnDays: product.returnPolicy?.returnDays || 7,
+            metaTitle: product.seo?.metaTitle || '',
+            metaDescription: product.seo?.metaDescription || '',
+            keywords: (product.seo?.keywords || []).join(', '),
+            status: product.status || 'Active',
+            featured: !!product.featured,
+            bestSeller: !!product.bestSeller,
+            newArrival: !!product.newArrival,
+          });
+          
+          if (product.images && product.images.length > 0) {
+            setExistingImages(product.images);
+            const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+            setImagePreviews(product.images.map((img: string) => `${baseUrl}${img}`));
+          }
+        }
+      }).catch(err => {
+        console.error(err);
+        alert('Failed to load product details.');
+      }).finally(() => {
+        setIsFetching(false);
+      });
+    } else {
+      // Auto-generate product ID (mock logic)
+      setFormData(prev => ({ ...prev, productId: `GLD${Date.now().toString().slice(-4)}` }));
+    }
+  }, [id, isEditMode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -99,7 +168,16 @@ export function AddProduct() {
   };
 
   const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    // If it's an existing image being removed (before any new files are added)
+    if (index < existingImages.length && imageFiles.length === 0) {
+      setExistingImages(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // Adjust index for newly added files
+      const adjustedIndex = index - (imageFiles.length > 0 ? 0 : existingImages.length);
+      if (adjustedIndex >= 0) {
+        setImageFiles(prev => prev.filter((_, i) => i !== adjustedIndex));
+      }
+    }
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -167,18 +245,32 @@ export function AddProduct() {
         keywords: parseArray(formData.keywords) 
       }));
 
-      // Images
-      imageFiles.forEach(file => {
-        payload.append('images', file);
-      });
+      // Existing Images (if we didn't add new ones)
+      if (imageFiles.length === 0) {
+        existingImages.forEach(img => {
+          payload.append('images', img);
+        });
+      } else {
+        // New Images
+        imageFiles.forEach(file => {
+          payload.append('images', file);
+        });
+      }
 
       // Submit to backend
-      const response = await api.post('/products', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      alert('Product created successfully!');
-      // Reset form or redirect here...
+      if (isEditMode) {
+        await api.put(`/products/${id}`, payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        alert('Product updated successfully!');
+        navigate('/admin/products/all');
+      } else {
+        await api.post('/products', payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        alert('Product created successfully!');
+        navigate('/admin/products/all');
+      }
     } catch (error) {
       console.error(error);
       alert('Failed to create product. See console for details.');
@@ -187,12 +279,16 @@ export function AddProduct() {
     }
   };
 
+  if (isFetching) {
+    return <div className="p-10 text-center text-gray-500">Loading product details...</div>;
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">Add Product</h1>
-          <p className="mt-2 text-sm uppercase tracking-[0.2em] text-gray-500">Create a new product listing in your catalog.</p>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900">{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
+          <p className="mt-2 text-sm uppercase tracking-[0.2em] text-gray-500">{isEditMode ? 'Update existing product information.' : 'Create a new product listing in your catalog.'}</p>
         </div>
       </div>
 
@@ -391,12 +487,12 @@ export function AddProduct() {
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-4">
-          <button type="button" className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition">
+          <button type="button" onClick={() => navigate('/admin/products/all')} className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition">
             Cancel
           </button>
           <button type="submit" disabled={loading} className="px-6 py-3 rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 transition flex items-center gap-2">
             <Save className="w-5 h-5" />
-            {loading ? 'Saving...' : 'Save Product'}
+            {loading ? 'Saving...' : (isEditMode ? 'Update Product' : 'Save Product')}
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Search, Plus, List, LayoutGrid, Eye, Edit2, Trash2, Box } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Plus, List, LayoutGrid, Eye, Edit2, Trash2, Box, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
 
 // Helper to format image URLs
@@ -18,6 +18,8 @@ export function Products() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +43,21 @@ export function Products() {
   const getCategoryName = (categoryId: string) => {
     const cat = categories.find(c => c.categoryId === categoryId || c.categoryName === categoryId);
     return cat ? cat.categoryName : categoryId;
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    try {
+      await api.delete(`/products/${productId}`);
+      setProducts(prev => prev.filter(p => p.productId !== productId && p.id !== productId));
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete product.');
+    }
+  };
+
+  const handleEdit = (productId: string) => {
+    navigate(`/admin/products/edit/${productId}`);
   };
 
   const filteredProducts = products.filter(product => 
@@ -191,13 +208,13 @@ export function Products() {
 
                       <td className="px-6 py-5">
                         <div className="flex items-center justify-center gap-2">
-                          <button className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
+                          <button onClick={() => setSelectedProduct(product)} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
                             <Eye className="h-4 w-4" />
                           </button>
-                          <button className="flex h-9 w-9 items-center justify-center rounded-full text-gray-300 transition hover:bg-blue-50 hover:text-blue-500">
+                          <button onClick={() => handleEdit(product.productId || product.id)} className="flex h-9 w-9 items-center justify-center rounded-full text-gray-300 transition hover:bg-blue-50 hover:text-blue-500">
                             <Edit2 className="h-4 w-4" />
                           </button>
-                          <button className="flex h-9 w-9 items-center justify-center rounded-full text-gray-300 transition hover:bg-red-50 hover:text-red-500">
+                          <button onClick={() => handleDelete(product.productId || product.id)} className="flex h-9 w-9 items-center justify-center rounded-full text-gray-300 transition hover:bg-red-50 hover:text-red-500">
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
@@ -210,6 +227,61 @@ export function Products() {
           </table>
         </div>
       </div>
+
+      {/* View Product Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <h2 className="text-lg font-bold text-gray-900">Product Dossier</h2>
+              <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-start gap-6 mb-6">
+                <div className="w-32 h-32 rounded-2xl bg-gray-100 shrink-0 overflow-hidden border border-gray-200">
+                  {selectedProduct.images?.[0] ? (
+                    <img src={getImageUrl(selectedProduct.images[0])} alt="Product" className="w-full h-full object-cover" />
+                  ) : (
+                    <Box className="w-full h-full p-8 text-gray-300" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900">{selectedProduct.name}</h3>
+                  <p className="text-sm text-gray-500 uppercase tracking-widest mt-1">REF: {selectedProduct.sku || selectedProduct.productId}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-md">{getCategoryName(selectedProduct.category)}</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-md">{selectedProduct.purity}</span>
+                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-md">₹{Number(selectedProduct.price || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Description</h4>
+                  <p className="text-sm text-gray-700">{selectedProduct.description || 'No description available.'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Weight</h4>
+                    <p className="text-sm text-gray-700">{selectedProduct.weight} {selectedProduct.weightUnit}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Stock Level</h4>
+                    <p className="text-sm text-gray-700">{selectedProduct.stock} Units Available</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 px-6 py-4 bg-gray-50 flex justify-end">
+              <button onClick={() => setSelectedProduct(null)} className="px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-100">
+                Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

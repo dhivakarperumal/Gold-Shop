@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
-const { createProduct, getProducts } = require('../controllers/productController');
+const { createProduct, getProducts, deleteProduct, getProductById, updateProduct } = require('../controllers/productController');
 
 const router = express.Router();
 
@@ -44,5 +44,8 @@ const conditionalUpload = (req, res, next) => {
 
 router.get('/', getProducts);
 router.post('/', conditionalUpload, createProduct);
+router.get('/:id', getProductById);
+router.put('/:id', conditionalUpload, updateProduct);
+router.delete('/:id', deleteProduct);
 
 module.exports = router;
