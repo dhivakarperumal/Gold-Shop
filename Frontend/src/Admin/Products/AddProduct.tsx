@@ -151,7 +151,33 @@ export function AddProduct() {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else if (type === 'number') {
-      setFormData(prev => ({ ...prev, [name]: Number(value) }));
+      const numValue = Number(value);
+      
+      setFormData(prev => {
+        const newData = { ...prev, [name]: numValue };
+        
+        // Auto-calculation logic for pricing
+        if (name === 'price' || name === 'discount') {
+          const price = name === 'price' ? numValue : prev.price;
+          const discount = name === 'discount' ? numValue : prev.discount;
+          
+          if (price > 0 && discount >= 0 && discount <= 100) {
+            newData.offerPrice = Math.round(price - (price * (discount / 100)));
+          } else {
+            newData.offerPrice = price;
+          }
+        } else if (name === 'offerPrice') {
+          const price = prev.price;
+          const offerPrice = numValue;
+          
+          if (price > 0 && offerPrice >= 0 && offerPrice <= price) {
+            // Calculate what the discount percentage is based on manual offer price entry
+            newData.discount = Number((((price - offerPrice) / price) * 100).toFixed(2));
+          }
+        }
+        
+        return newData;
+      });
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }

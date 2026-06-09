@@ -111,17 +111,17 @@ export function Products() {
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`inline-flex h-10 w-12 items-center justify-center rounded-full transition ${viewMode === 'grid' ? 'text-gray-400 hover:bg-gray-50' : 'text-gray-400 hover:bg-gray-50'}`}
-              disabled // Keep list as primary for this design specifically
+              className={`inline-flex h-10 w-12 items-center justify-center rounded-full transition ${viewMode === 'grid' ? 'bg-[#1b88f3] text-white shadow' : 'text-gray-400 hover:bg-gray-50'}`}
             >
               <LayoutGrid className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm whitespace-nowrap">
+        {/* Table or Grid */}
+        {viewMode === 'list' ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">S.No</th>
@@ -226,6 +226,66 @@ export function Products() {
             </tbody>
           </table>
         </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {loading ? (
+              <div className="col-span-full py-12 text-center text-gray-400 font-medium">Loading products...</div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-gray-400 font-medium">No products found matching your search.</div>
+            ) : (
+              filteredProducts.map((product, index) => {
+                const isActive = product.status === 'Active';
+                const mainImage = product.images?.[0] ? getImageUrl(product.images[0]) : null;
+                
+                return (
+                  <div key={product.id || index} className="group relative flex flex-col rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:shadow-xl hover:border-gray-200 overflow-hidden">
+                    {/* Image Area */}
+                    <div className="aspect-square w-full bg-gray-50/50 relative border-b border-gray-100 p-4">
+                      <div className="w-full h-full rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
+                        {mainImage ? (
+                          <img src={mainImage} alt={product.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-gray-50">
+                            <Box className="h-8 w-8 text-gray-300" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="absolute top-6 right-6">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${
+                          isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-red-50 text-red-600 border border-red-100/50'
+                        }`}>
+                          {isActive ? 'Verified' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Content Area */}
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">REF: {product.sku || product.productId}</span>
+                        <h3 className="font-black text-gray-900 mt-1 text-base uppercase tracking-tight">{product.name}</h3>
+                        <p className="text-sm font-semibold text-gray-500 mt-0.5">{getCategoryName(product.category)}</p>
+                      </div>
+                      
+                      <div className="mt-auto pt-5 flex items-center justify-between">
+                        <span className="inline-flex rounded-lg bg-blue-50/80 px-2.5 py-1 text-sm font-bold text-blue-600">
+                          ₹{Number(product.price || 0).toLocaleString('en-IN')}
+                        </span>
+                        
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => setSelectedProduct(product)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"><Eye className="w-4 h-4" /></button>
+                          <button onClick={() => handleEdit(product.productId || product.id)} className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 transition hover:bg-blue-50 hover:text-blue-500"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(product.productId || product.id)} className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 transition hover:bg-red-50 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
 
       {/* View Product Modal */}
