@@ -1,0 +1,25 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Debug and runtime files
+*.log
+
+# Build output
+dist/
+build/
+
+# Uploaded files should not be tracked if stored outside source
+public/category-images/
