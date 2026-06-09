@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { categories as initialCategories, type Category } from '../../lib/categoryData';
 import { products, findCategoryName } from '../../lib/productData';
 
@@ -123,7 +123,7 @@ export function Products() {
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <p className="text-xs uppercase text-gray-500">Category</p>
-              <p className="mt-2 font-medium">{findCategoryName(latestProduct.categoryId, categories)}</p>
+              <p className="mt-2 font-medium">{findCategoryName(latestProduct.categoryId, categoryList)}</p>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <p className="text-xs uppercase text-gray-500">Subcategory</p>
@@ -138,7 +138,7 @@ export function Products() {
 
         <div className="bg-white border rounded-lg shadow-sm p-5">
           <p className="text-sm font-semibold text-gray-700 mb-3">Category Summary</p>
-          {categories.map((category) => (
+          {categoryList.map((category) => (
             <div key={category.categoryId} className="mb-4 last:mb-0">
               <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
                 <div>
@@ -176,7 +176,7 @@ export function Products() {
               {products.map((product) => (
                 <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-3 py-3 font-medium">{product.name}</td>
-                  <td className="px-3 py-3">{findCategoryName(product.categoryId, categories)}</td>
+                  <td className="px-3 py-3">{findCategoryName(product.categoryId, categoryList)}</td>
                   <td className="px-3 py-3">{product.subCategory}</td>
                   <td className="px-3 py-3">{product.stock}</td>
                   <td className="px-3 py-3">₹{product.price.toLocaleString()}</td>

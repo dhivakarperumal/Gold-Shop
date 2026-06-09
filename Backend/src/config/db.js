@@ -47,6 +47,50 @@ async function initializeDatabase() {
       )
     `);
     console.log('Categories table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(100),
+        sub_category VARCHAR(100),
+        brand VARCHAR(100),
+        purity VARCHAR(50),
+        hallmark TINYINT(1) DEFAULT 0,
+        certificate VARCHAR(100),
+        weight DECIMAL(10,3),
+        weight_unit VARCHAR(20),
+        coin_weight VARCHAR(50),
+        making_charges DECIMAL(10,2),
+        wastage_percentage DECIMAL(5,2),
+        price DECIMAL(10,2),
+        offer_price DECIMAL(10,2),
+        discount DECIMAL(5,2),
+        stock INT DEFAULT 0,
+        sku VARCHAR(100),
+        gender VARCHAR(50),
+        occasion TEXT,
+        color VARCHAR(50),
+        material VARCHAR(50),
+        size TEXT,
+        length_options TEXT,
+        description TEXT,
+        features TEXT,
+        dimensions TEXT,
+        shipping TEXT,
+        return_policy TEXT,
+        seo TEXT,
+        images TEXT,
+        status VARCHAR(50) DEFAULT 'Active',
+        featured TINYINT(1) DEFAULT 0,
+        best_seller TINYINT(1) DEFAULT 0,
+        new_arrival TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Products table initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
   } finally {

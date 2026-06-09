@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Plus, List, LayoutGrid, Edit2, Trash2 } from 'lucide-react';
-import { type Category } from '../../lib/categoryData';
+
 import api from '../../api';
 
 const getImageUrl = (imagePath: string | null | undefined) => {

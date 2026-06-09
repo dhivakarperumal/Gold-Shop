@@ -4,6 +4,7 @@ const cors = require('cors');
 const { initializeDatabase } = require('./src/config/db');
 const authRoutes = require('./src/routers/authRoutes');
 const categoryRoutes = require('./src/routers/categoryRoutes');
+const productRoutes = require('./src/routers/productRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 // Auth Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
 
 // Start server
 app.listen(PORT, async () => {
