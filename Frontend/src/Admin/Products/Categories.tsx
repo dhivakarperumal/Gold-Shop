@@ -3,6 +3,14 @@ import { Search, Plus, List, LayoutGrid, Edit2, Trash2 } from 'lucide-react';
 import { type Category } from '../../lib/categoryData';
 import api from '../../api';
 
+const getImageUrl = (imagePath: string | null | undefined) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('data:')) return imagePath;
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+  return `${baseUrl}${imagePath.startsWith('/') ? imagePath : '/' + imagePath}`;
+};
+
 interface NewCategoryForm {
   categoryId: string;
   categoryName: string;
@@ -318,7 +326,7 @@ export function Categories() {
                   <div key={category.categoryId} className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                     {category.image && (
                       <div className="h-40 overflow-hidden bg-gray-100">
-                        <img src={category.image} alt={category.categoryName} className="h-full w-full object-cover" />
+                        <img src={getImageUrl(category.image)} alt={category.categoryName} className="h-full w-full object-cover" />
                       </div>
                     )}
                     <div className="p-6">
