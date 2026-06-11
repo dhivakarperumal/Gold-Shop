@@ -17,6 +17,12 @@ import { LoanForm } from "./Admin/Loans/LoanForm";
 import { Payments } from "./Admin/Payments/Payments";
 import { GoldRelease } from "./Admin/Loans/GoldRelease";
 import { Dealers } from "./Admin/Dealers/Dealers";
+import { DealerForm } from "./Admin/Dealers/DealerForm";
+import { DealerProfile } from "./Admin/Dealers/DealerProfile";
+import { DealerPurchase } from "./Admin/Dealers/DealerPurchase";
+import { DealerPayment } from "./Admin/Dealers/DealerPayment";
+import { DealerLedger } from "./Admin/Dealers/DealerLedger";
+import { DealerReports } from "./Admin/Dealers/DealerReports";
 import { Reports } from "./Admin/Reports/Reports";
 import { Products } from "./Admin/Products/Products";
 import { AddProduct } from "./Admin/Products/AddProduct";
@@ -64,6 +70,13 @@ const router = createBrowserRouter([
       { path: "loans/release/:id", element: <GoldRelease /> },
       { path: "payments", element: <Payments /> },
       { path: "dealers", element: <Dealers /> },
+      { path: "dealers/new", element: <DealerForm /> },
+      { path: "dealers/edit/:id", element: <DealerForm /> },
+      { path: "dealers/view/:id", element: <DealerProfile /> },
+      { path: "dealers/purchases", element: <DealerPurchase /> },
+      { path: "dealers/payments", element: <DealerPayment /> },
+      { path: "dealers/ledger", element: <DealerLedger /> },
+      { path: "dealers/reports", element: <DealerReports /> },
       { path: "reports", element: <Reports /> }
     ]
   },

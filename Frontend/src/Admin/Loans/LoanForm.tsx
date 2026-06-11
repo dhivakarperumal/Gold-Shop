@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
 import { 
   User, Search, CheckCircle, Gem, Trash2, Camera, 
   Plus, Calculator, Wallet, ShieldCheck
@@ -19,7 +19,7 @@ type GoldItem = {
 
 export function LoanForm() {
   const navigate = useNavigate();
-  const { customers } = useData();
+  const { customers, refreshData } = useData();
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -157,15 +157,19 @@ export function LoanForm() {
         interestPaid: 0,
       };
 
-      await db.add('loans', finalLoan);
+      // Create loan via API
+      await api.post('/loans', finalLoan);
       
-      const customer = customers.find(c => c.id === loanData.customerId);
+      // Update customer balance
+      const customer = customers.find(c => c.customerId === loanData.customerId);
       if (customer) {
-        await db.update('customers', customer.id, {
+        await api.put(`/customers/${customer.id}`, {
+          ...customer,
           amountActive: (Number(customer.amountActive) || 0) + Number(loanData.loanAmount)
         });
       }
       
+      refreshData();
       navigate('/admin/loans');
     } catch (e: any) {
       console.error("Disbursement Error:", e);
@@ -215,11 +219,11 @@ export function LoanForm() {
                {filteredCustomers.map(c => (
                  <div 
                    key={c.id} 
-                   onClick={() => setLoanData(prev => ({ ...prev, customerId: c.id, customerName: c.name, customerMobile: c.mobile }))}
-                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${loanData.customerId === c.id ? 'border-blue-600 bg-blue-50/50' : 'border-gray-50 bg-white hover:border-blue-200'}`}
+                   onClick={() => setLoanData(prev => ({ ...prev, customerId: c.customerId, customerName: c.name, customerMobile: c.mobile }))}
+                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${loanData.customerId === c.customerId ? 'border-blue-600 bg-blue-50/50' : 'border-gray-50 bg-white hover:border-blue-200'}`}
                  >
                     <div className="flex items-center gap-3">
-                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${loanData.customerId === c.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${loanData.customerId === c.customerId ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
                           {c.name?.[0].toUpperCase()}
                        </div>
                        <div>
@@ -227,7 +231,7 @@ export function LoanForm() {
                           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{c.mobile}</p>
                        </div>
                     </div>
-                    {loanData.customerId === c.id && <CheckCircle className="w-5 h-5 text-blue-600" />}
+                    {loanData.customerId === c.customerId && <CheckCircle className="w-5 h-5 text-blue-600" />}
                  </div>
                ))}
             </div>

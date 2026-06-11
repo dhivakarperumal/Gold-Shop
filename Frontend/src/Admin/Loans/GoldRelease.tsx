@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
 import { useData } from '../../context/DataContext';
 import { IndianRupee, CheckCircle, User, ShieldCheck, Gem, Receipt, ArrowLeft, AlertCircle, Camera, CreditCard, Clock } from 'lucide-react';
 
 export function GoldRelease() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { loans, customers } = useData();
+  const { loans, customers, refreshData } = useData();
   
   const [loan, setLoan] = useState<any>(null);
   const [step, setStep] = useState(1);
@@ -30,7 +30,7 @@ export function GoldRelease() {
 
   useEffect(() => {
     if (id && loans.length > 0) {
-      const found = loans.find(l => l.id === id);
+      const found = loans.find(l => String(l.id) === String(id) || String(l.loanId) === String(id));
       if (found) {
         setLoan(found);
         setPaymentAmount(Number(found.balanceAmount || found.loanAmount));
@@ -82,30 +82,19 @@ export function GoldRelease() {
   const handleFinalize = async () => {
     setLoading(true);
     try {
+      const loanId = String(loan.id || loan.loanId || '');
+      if (!loanId) {
+        throw new Error('Loan identifier missing');
+      }
+
       const amountPaid = Number(paymentAmount);
       let newBalance = Math.max(0, (Number(loan.balanceAmount) || Number(loan.loanAmount)) - amountPaid);
       let newStatus = newBalance === 0 ? 'Closed' : 'Active';
       let newPrincipalPaid = (Number(loan.paidAmount) || 0) + amountPaid;
 
-      // Save Transaction
-      const transaction = {
-        loanId: loan.id,
-        customerId: loan.customerId,
-        customerName: loan.customerName,
-        amount: amountPaid,
-        type: newBalance === 0 ? 'Full Settlement' : 'Partial Payment',
-        balance: newBalance,
-        date: new Date().toISOString(),
-        isThirdParty,
-        payerName: isThirdParty ? payerName : loan.customerName,
-        payerRelation: isThirdParty ? payerRelation : 'Self',
-        idVerified: idNumber,
-        idDocument: idImage
-      };
-      await db.add('payments', transaction);
-
-      // Update Loan
-      await db.update('loans', loan.id, {
+      // Update Loan via API
+      await api.put(`/loans/${loanId}`, {
+        ...loan,
         balanceAmount: newBalance,
         paidAmount: newPrincipalPaid,
         status: newStatus,
@@ -113,17 +102,34 @@ export function GoldRelease() {
         releasedTo: isThirdParty ? payerName : loan.customerName
       });
 
-      // Update Customer Balance
+      // Record payment event
+      await api.post('/payments', {
+        customerId: loan.customerId,
+        customerName: loan.customerName,
+        loanId: loanId,
+        amount: amountPaid,
+        type: newStatus === 'Closed' ? 'Settlement' : 'Partial',
+        date: new Date().toISOString(),
+        isThirdParty: isThirdParty ? 1 : 0,
+        payerName: isThirdParty ? payerName : loan.customerName,
+        payerRelation: isThirdParty ? payerRelation : 'Self',
+        balance: newBalance,
+        releasedTo: isThirdParty ? payerName : loan.customerName
+      });
+
+      // Update Customer Balance if loan is closed
       if (newStatus === 'Closed') {
-        const customer = customers.find(c => c.id === loan.customerId);
+        const customer = customers.find(c => c.customerId === loan.customerId);
         if (customer) {
           const currentActive = Number(customer.amountActive || 0);
-          await db.update('customers', loan.customerId, {
+          await api.put(`/customers/${customer.id}`, {
+            ...customer,
             amountActive: Math.max(0, currentActive - Number(loan.loanAmount))
           });
         }
       }
 
+      refreshData();
       setStep(6); // Success Step
     } catch (error) {
        console.error(error);
@@ -141,7 +147,7 @@ export function GoldRelease() {
         </button>
         <div>
            <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Gold Release Gateway</h1>
-           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Loan Ref: #{loan.id?.slice(-8).toUpperCase()} | {loan.customerName}</p>
+           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Loan Ref: #{String(loan.id || '').slice(-8).toUpperCase()} | {loan.customerName}</p>
         </div>
       </div>
 
@@ -424,7 +430,7 @@ export function GoldRelease() {
                  <div className="absolute inset-0 rounded-full border-4 border-emerald-600 animate-ping opacity-20" />
               </div>
               <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase mb-4">Collateral Released</h2>
-              <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em] max-w-sm">Loan #{loan.id?.slice(-8).toUpperCase()} has been successfully closed and ornaments returned.</p>
+              <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em] max-w-sm">Loan #{String(loan.id || '').slice(-8).toUpperCase()} has been successfully closed and ornaments returned.</p>
               
               <div className="grid grid-cols-2 gap-4 mt-12 w-full max-w-md">
                  <button onClick={() => navigate('/admin/payments')} className="py-4 bg-gray-50 text-xs font-black text-gray-600 uppercase tracking-widest rounded-2xl border border-gray-100 hover:bg-white transition-all">View Receipt</button>

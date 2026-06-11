@@ -119,7 +119,7 @@ export function Payments() {
                          {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-mono text-[10px] text-gray-400 mb-1 uppercase">#{p.id?.slice(-8).toUpperCase()}</div>
+                        <div className="font-mono text-[10px] text-gray-400 mb-1 uppercase">#{String(p.id || '').slice(-8).toUpperCase()}</div>
                         <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
                           <Calendar className="w-3 h-3" />
                           <span>{new Date(p.date).toLocaleDateString()}</span>
@@ -135,7 +135,7 @@ export function Payments() {
                       </td>
                       <td className="px-6 py-4">
                          <span className="font-mono text-[10px] text-gray-500 font-bold border border-gray-200 px-1.5 py-0.5 rounded italic">
-                           {p.loanId?.slice(-6).toUpperCase()}
+                           {String(p.loanId || '').slice(-6).toUpperCase()}
                          </span>
                       </td>
                       <td className="px-6 py-4">
@@ -175,7 +175,7 @@ export function Payments() {
                 <div key={p.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col">
                   <div className="p-5 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
                     <div>
-                      <div className="font-mono text-[9px] text-gray-400 uppercase tracking-tighter leading-none mb-1">REC-#{p.id?.slice(-8).toUpperCase()}</div>
+                      <div className="font-mono text-[9px] text-gray-400 uppercase tracking-tighter leading-none mb-1">REC-#{String(p.id || '').slice(-8).toUpperCase()}</div>
                       <h3 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors uppercase leading-none">{p.customerName}</h3>
                       {p.isThirdParty && (
                         <div className="text-[10px] font-bold text-amber-600 mt-1 uppercase tracking-tighter">Payer: {p.payerName}</div>
@@ -206,7 +206,7 @@ export function Payments() {
 
                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest border-t border-gray-50 pt-3">
                        <div className="text-gray-400">Loan Reference</div>
-                       <div className="text-blue-500 bg-blue-50 px-2 py-0.5 rounded">#LOAN-{p.loanId?.slice(-6).toUpperCase()}</div>
+                       <div className="text-blue-500 bg-blue-50 px-2 py-0.5 rounded">#LOAN-{String(p.loanId || '').slice(-6).toUpperCase()}</div>
                     </div>
                   </div>
 
@@ -306,7 +306,7 @@ export function Payments() {
                     )}
                     <div className="flex justify-between">
                        <span className="text-xs font-black text-gray-500 uppercase">Loan Reference</span>
-                       <span className="text-xs font-mono font-bold text-gray-900">LOAN-{selectedReceipt.loanId?.slice(-8).toUpperCase()}</span>
+                       <span className="text-xs font-mono font-bold text-gray-900">LOAN-{String(selectedReceipt.loanId || '').slice(-8).toUpperCase()}</span>
                     </div>
                    <div className="flex justify-between">
                       <span className="text-xs font-black text-gray-500 uppercase">Payment Type</span>

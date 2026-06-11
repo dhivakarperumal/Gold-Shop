@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
 import { useData } from '../../context/DataContext';
 import { Search, Plus, Trash2, IndianRupee, Calendar, Gem, Wallet, CheckCircle, Clock, AlertCircle, Receipt, LayoutGrid, List } from 'lucide-react';
 
 export function Loans() {
   const navigate = useNavigate();
-  const { loans, customers } = useData();
+  const { loans, customers, refreshData } = useData();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,61 +50,76 @@ export function Loans() {
       if (newBalance === 0) newStatus = 'Closed';
     }
 
-    // Save transaction
-    const transaction = {
-      loanId: selectedLoan.id,
-      customerId: selectedLoan.customerId,
-      customerName: selectedLoan.customerName,
-      amount: amountPaid,
-      type: paymentType,
-      balance: newBalance,
-      date: new Date().toISOString(),
-      isThirdParty,
-      payerName: isThirdParty ? payerName : selectedLoan.customerName,
-      payerRelation: isThirdParty ? payerRelation : 'Self'
-    };
-    await db.add('payments', transaction);
+    try {
+      // Update loan via API
+      await api.put(`/loans/${selectedLoan.id}`, {
+        ...selectedLoan,
+        balanceAmount: newBalance,
+        paidAmount: newPrincipalPaid,
+        interestPaid: newInterestPaid,
+        status: newStatus
+      });
 
-    // Update loan
-    await db.update('loans', selectedLoan.id, {
-      balanceAmount: newBalance,
-      paidAmount: newPrincipalPaid,
-      interestPaid: newInterestPaid,
-      status: newStatus
-    });
+      // Record payment event
+      await api.post('/payments', {
+        customerId: selectedLoan.customerId,
+        customerName: selectedLoan.customerName,
+        loanId: selectedLoan.id,
+        amount: amountPaid,
+        type: paymentType === 'Full' ? 'Settlement' : paymentType,
+        date: new Date().toISOString(),
+        isThirdParty: isThirdParty ? 1 : 0,
+        payerName: isThirdParty ? payerName : selectedLoan.customerName,
+        payerRelation: isThirdParty ? payerRelation : 'Self',
+        balance: newBalance,
+        releasedTo: isThirdParty ? payerName : selectedLoan.customerName
+      });
 
-    // Update customer balance if settled
-    if (newStatus === 'Closed') {
-      const customer = customers.find(c => c.id === selectedLoan.customerId);
-      if (customer) {
-        const currentActive = Number(customer.amountActive || 0);
-        await db.update('customers', selectedLoan.customerId, {
-          amountActive: Math.max(0, currentActive - Number(selectedLoan.loanAmount))
-        });
+      // Update customer balance if settled
+      if (newStatus === 'Closed') {
+        const customer = customers.find(c => c.customerId === selectedLoan.customerId);
+        if (customer) {
+          const currentActive = Number(customer.amountActive || 0);
+          await api.put(`/customers/${customer.id}`, {
+            ...customer,
+            amountActive: Math.max(0, currentActive - Number(selectedLoan.loanAmount))
+          });
+        }
       }
-    }
 
-    setIsPaymentModalOpen(false);
-    setSelectedLoan(null);
-    setPaymentAmount(0);
-    setIsThirdParty(false);
-    setPayerName('');
-    setPayerRelation('');
+      refreshData();
+      setIsPaymentModalOpen(false);
+      setSelectedLoan(null);
+      setPaymentAmount(0);
+      setIsThirdParty(false);
+      setPayerName('');
+      setPayerRelation('');
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Failed to process payment');
+    }
   };
 
   const deleteLoan = async (id: string) => {
     if(confirm('Are you sure you want to delete this loan record?')) {
-      const loan = loans.find(l => l.id === id);
-      if (loan) {
-        const customer = customers.find(c => c.id === loan.customerId);
-        if (customer) {
-          const currentActive = Number(customer.amountActive || 0);
-          await db.update('customers', loan.customerId, {
-            amountActive: Math.max(0, currentActive - Number(loan.loanAmount))
-          });
+      try {
+        const loan = loans.find(l => String(l.id) === String(id));
+        if (loan) {
+          const customer = customers.find(c => c.customerId === loan.customerId);
+          if (customer) {
+            const currentActive = Number(customer.amountActive || 0);
+            await api.put(`/customers/${customer.id}`, {
+              ...customer,
+              amountActive: Math.max(0, currentActive - Number(loan.loanAmount))
+            });
+          }
         }
+        await api.delete(`/loans/${id}`);
+        refreshData();
+      } catch (error) {
+        console.error('Error deleting loan:', error);
+        alert('Failed to delete loan');
       }
-      await db.delete('loans', id);
     }
   };
 
@@ -247,7 +262,7 @@ export function Loans() {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
                       <td className="px-6 py-5">
-                        <div className="font-mono text-[10px] font-black text-blue-500 mb-1 leading-none uppercase">#{l.id?.slice(-8).toUpperCase()}</div>
+                        <div className="font-mono text-[10px] font-black text-blue-500 mb-1 leading-none uppercase">#{String(l.id || '').slice(-8).toUpperCase()}</div>
                         <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tighter">
                           <Calendar className="w-3 h-3 text-gray-400" />
                           <span>{new Date(l.startDate || l.loanDate).toLocaleDateString()}</span>
@@ -324,7 +339,7 @@ export function Loans() {
                 <div key={l.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col">
                   <div className="p-5 border-b border-gray-50 bg-gray-50/50 flex justify-between items-start">
                     <div>
-                      <div className="font-mono text-[9px] text-blue-500 font-black uppercase tracking-tighter leading-none mb-1">REF: #{l.id?.slice(-8).toUpperCase()}</div>
+                      <div className="font-mono text-[9px] text-blue-500 font-black uppercase tracking-tighter leading-none mb-1">REF: #{String(l.id || '').slice(-8).toUpperCase()}</div>
                       <h3 className="font-black text-gray-900 group-hover:text-blue-600 transition-colors uppercase text-xs leading-none">{l.customerName}</h3>
                     </div>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${

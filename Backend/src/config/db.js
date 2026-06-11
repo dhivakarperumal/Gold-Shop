@@ -132,6 +132,55 @@ async function initializeDatabase() {
       )
     `);
     console.log('Customers table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS loans (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        customer_id VARCHAR(100) NOT NULL,
+        customer_name VARCHAR(100),
+        customer_mobile VARCHAR(15),
+        gold_items LONGTEXT,
+        loan_amount DECIMAL(12,2) NOT NULL,
+        interest_rate DECIMAL(5,2) DEFAULT 0,
+        interest_type VARCHAR(50) DEFAULT 'Simple',
+        duration INT DEFAULT 12,
+        processing_fee DECIMAL(10,2) DEFAULT 0,
+        valuation_charges DECIMAL(10,2) DEFAULT 0,
+        gst DECIMAL(10,2) DEFAULT 0,
+        loan_date DATE,
+        due_date DATE,
+        balance_amount DECIMAL(12,2),
+        paid_amount DECIMAL(12,2) DEFAULT 0,
+        interest_paid DECIMAL(12,2) DEFAULT 0,
+        status VARCHAR(50) DEFAULT 'Active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+      )
+    `);
+    console.log('Loans table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        customer_id VARCHAR(100) NOT NULL,
+        customer_name VARCHAR(100),
+        loan_id INT NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        type VARCHAR(50) DEFAULT 'Settlement',
+        date DATETIME,
+        is_third_party TINYINT(1) DEFAULT 0,
+        payer_name VARCHAR(100),
+        payer_relation VARCHAR(100),
+        balance DECIMAL(12,2) DEFAULT 0,
+        released_to VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+        FOREIGN KEY (loan_id) REFERENCES loans(id)
+      )
+    `);
+    console.log('Payments table initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
   } finally {
