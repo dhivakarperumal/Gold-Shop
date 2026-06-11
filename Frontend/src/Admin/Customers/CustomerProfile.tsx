@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
 import { 
   User, Phone, Mail, MapPin, CreditCard, Calendar, 
   History, Wallet, Gem, ShieldCheck,
@@ -18,19 +18,32 @@ export function CustomerProfile() {
   useEffect(() => {
     const loadCustomerData = async () => {
       if (!id) return;
-      const customers = await db.get('customers');
-      const found = customers.find((c: any) => c.id === id);
-      setCustomer(found);
+      try {
+        const customerResponse = await api.get(`/customers/${id}`);
+        setCustomer(customerResponse.data);
 
-      const allLoans = await db.get('loans');
-      const customerLoans = allLoans.filter((l: any) => l.customerId === id);
-      setLoans(customerLoans);
+        // Load loans for this customer (if endpoint exists)
+        try {
+          const loansResponse = await api.get(`/loans?customerId=${id}`);
+          setLoans(Array.isArray(loansResponse.data) ? loansResponse.data : []);
+        } catch (error) {
+          console.log('Loans endpoint not available yet');
+          setLoans([]);
+        }
 
-      const allPayments = await db.get('payments');
-      const customerPayments = allPayments.filter((p: any) => p.customerId === id);
-      setPayments(customerPayments);
-      
-      setLoading(false);
+        // Load payments for this customer (if endpoint exists)
+        try {
+          const paymentsResponse = await api.get(`/payments?customerId=${id}`);
+          setPayments(Array.isArray(paymentsResponse.data) ? paymentsResponse.data : []);
+        } catch (error) {
+          console.log('Payments endpoint not available yet');
+          setPayments([]);
+        }
+      } catch (error) {
+        console.error('Error loading customer data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     loadCustomerData();
   }, [id]);

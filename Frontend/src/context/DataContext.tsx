@@ -1,12 +1,12 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { dbFirestore } from '../lib/firebase';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import api from '../api';
 
 interface DataContextType {
   customers: any[];
   loans: any[];
   payments: any[];
   isDataLoading: boolean;
+  refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -17,29 +17,47 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<any[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubCustomers = onSnapshot(collection(dbFirestore, 'customers'), (snapshot) => {
-      setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+  const loadData = useCallback(async () => {
+    try {
+      setIsDataLoading(true);
+      
+      // Load customers from API
+      try {
+        const customersResponse = await api.get('/customers');
+        setCustomers(Array.isArray(customersResponse.data) ? customersResponse.data : []);
+      } catch (error) {
+        console.error('Error loading customers:', error);
+        setCustomers([]);
+      }
 
-    const unsubLoans = onSnapshot(collection(dbFirestore, 'loans'), (snapshot) => {
-      setLoans(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+      // Load loans from API (if endpoint exists)
+      try {
+        const loansResponse = await api.get('/loans');
+        setLoans(Array.isArray(loansResponse.data) ? loansResponse.data : []);
+      } catch (error) {
+        console.log('Loans endpoint not available yet');
+        setLoans([]);
+      }
 
-    const unsubPayments = onSnapshot(collection(dbFirestore, 'payments'), (snapshot) => {
-      setPayments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // Load payments from API (if endpoint exists)
+      try {
+        const paymentsResponse = await api.get('/payments');
+        setPayments(Array.isArray(paymentsResponse.data) ? paymentsResponse.data : []);
+      } catch (error) {
+        console.log('Payments endpoint not available yet');
+        setPayments([]);
+      }
+    } finally {
       setIsDataLoading(false);
-    });
-
-    return () => {
-      unsubCustomers();
-      unsubLoans();
-      unsubPayments();
-    };
+    }
   }, []);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   return (
-    <DataContext.Provider value={{ customers, loans, payments, isDataLoading }}>
+    <DataContext.Provider value={{ customers, loans, payments, isDataLoading, refreshData: loadData }}>
       {children}
     </DataContext.Provider>
   );

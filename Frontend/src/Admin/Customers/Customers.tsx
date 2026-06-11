@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
 import { useData } from '../../context/DataContext';
 import { Search, Plus, Trash2, Edit2, User, Phone, LayoutGrid, List, Eye, Mail, ShieldCheck } from 'lucide-react';
 
 export function Customers() {
   const navigate = useNavigate();
-  const { customers } = useData();
+  const { customers, refreshData } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 
@@ -16,8 +16,13 @@ export function Customers() {
 
   const deleteCustomer = async (id: string) => {
     if(confirm('Are you sure you want to delete this customer? All associated data will be removed.')) {
-      await db.delete('customers', id);
-      
+      try {
+        await api.delete(`/customers/${id}`);
+        refreshData();
+      } catch (error) {
+        console.error('Error deleting customer:', error);
+        alert('Failed to delete customer');
+      }
     }
   };
 

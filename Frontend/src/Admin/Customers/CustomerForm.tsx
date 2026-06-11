@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { db } from '../../lib/db';
+import api from '../../api';
+import { useData } from '../../context/DataContext';
 import { 
   User, Phone, Mail, CreditCard, MapPin, Briefcase, 
   Users, Save, X, Camera, ShieldCheck, ChevronRight,
@@ -10,6 +11,7 @@ import {
 export function CustomerForm() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { refreshData } = useData();
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<any>({
@@ -50,16 +52,19 @@ export function CustomerForm() {
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const customers = await db.get('customers');
-        const customer = customers.find((c: any) => c.id === id);
-        if (customer) {
-          setFormData(customer);
+        try {
+          const response = await api.get(`/customers/${id}`);
+          setFormData(response.data);
+        } catch (error) {
+          console.error('Error fetching customer:', error);
+          alert('Failed to load customer data');
         }
       } else {
-        // Generate Customer ID for new entries
-        const customers = await db.get('customers');
-        const nextId = (customers.length + 1).toString().padStart(4, '0');
-        setFormData((prev: any) => ({ ...prev, customerId: `CUST-${nextId}` }));
+        // Generate unique Customer ID for new entries using timestamp
+        const timestamp = Date.now();
+        const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        const uniqueId = `CUST-${timestamp}-${randomNum}`;
+        setFormData((prev: any) => ({ ...prev, customerId: uniqueId }));
       }
     };
     fetchData();
@@ -86,13 +91,19 @@ export function CustomerForm() {
     setLoading(true);
     try {
       if (id) {
-        await db.update('customers', id, formData);
+        await api.put(`/customers/${id}`, formData);
       } else {
-        await db.add('customers', formData);
+        await api.post('/customers', formData);
       }
+      refreshData();
       navigate('/admin/customers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving customer:', error);
+      const errorMessage = 
+        error.response?.status === 409 
+          ? 'Customer ID already exists. Please refresh and try again.'
+          : error.response?.data?.message || 'Failed to save customer';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

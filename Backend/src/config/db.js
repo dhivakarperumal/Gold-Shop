@@ -91,6 +91,47 @@ async function initializeDatabase() {
       )
     `);
     console.log('Products table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        customer_id VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        mobile VARCHAR(15) NOT NULL,
+        alt_phone VARCHAR(15),
+        email VARCHAR(100),
+        aadhar_no VARCHAR(20),
+        pan_no VARCHAR(20),
+        voter_id VARCHAR(50),
+        kyc_status VARCHAR(50) DEFAULT 'Pending',
+        permanent_address TEXT,
+        current_address TEXT,
+        city VARCHAR(50),
+        state VARCHAR(50),
+        pincode VARCHAR(10),
+        landmark VARCHAR(100),
+        occupation VARCHAR(100),
+        company_name VARCHAR(100),
+        monthly_income DECIMAL(12,2),
+        business_type VARCHAR(100),
+        bank_account_no VARCHAR(50),
+        ifsc_code VARCHAR(20),
+        father_spouse_name VARCHAR(100),
+        nominee_name VARCHAR(100),
+        nominee_relation VARCHAR(50),
+        emergency_contact_no VARCHAR(15),
+        reference_name VARCHAR(100),
+        reference_mobile VARCHAR(15),
+        customer_photo LONGTEXT,
+        aadhar_front LONGTEXT,
+        aadhar_back LONGTEXT,
+        pan_photo LONGTEXT,
+        amount_active DECIMAL(12,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Customers table initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
   } finally {
