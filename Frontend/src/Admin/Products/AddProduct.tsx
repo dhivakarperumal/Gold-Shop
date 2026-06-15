@@ -326,11 +326,11 @@ export function AddProduct() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Product Name</span>
-              <input required name="name" value={formData.name} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input required name="name" value={formData.name} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. 22K Gold Necklace" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">SKU</span>
-              <input required name="sku" value={formData.sku} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input required name="sku" value={formData.sku} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. RGJ-NK-001" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Category</span>
@@ -348,7 +348,7 @@ export function AddProduct() {
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Brand</span>
-              <input name="brand" value={formData.brand} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input name="brand" value={formData.brand} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. Royal Gold Jewellers" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Gender</span>
@@ -363,7 +363,7 @@ export function AddProduct() {
           <div className="mt-4">
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Description</span>
-              <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3"></textarea>
+              <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="Describe the product details, design, and craftsmanship..."></textarea>
             </label>
           </div>
         </div>
@@ -374,27 +374,27 @@ export function AddProduct() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Base Price (₹)</span>
-              <input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0.00" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Offer Price (₹)</span>
-              <input type="number" name="offerPrice" value={formData.offerPrice} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="offerPrice" value={formData.offerPrice} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0.00" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Discount (%)</span>
-              <input type="number" name="discount" value={formData.discount} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="discount" value={formData.discount} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Making Charges (₹)</span>
-              <input type="number" name="makingCharges" value={formData.makingCharges} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="makingCharges" value={formData.makingCharges} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0.00" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Wastage (%)</span>
-              <input type="number" name="wastagePercentage" value={formData.wastagePercentage} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="wastagePercentage" value={formData.wastagePercentage} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Stock Quantity</span>
-              <input type="number" name="stock" value={formData.stock} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input type="number" name="stock" value={formData.stock} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0" />
             </label>
           </div>
         </div>
@@ -405,11 +405,11 @@ export function AddProduct() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Material</span>
-              <input name="material" value={formData.material} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input name="material" value={formData.material} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. Gold, Diamond, Platinum" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Color</span>
-              <input name="color" value={formData.color} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input name="color" value={formData.color} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. Yellow Gold, Rose Gold" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Purity</span>
@@ -422,7 +422,7 @@ export function AddProduct() {
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Weight</span>
               <div className="flex gap-2">
-                <input type="number" step="0.01" name="weight" value={formData.weight} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+                <input type="number" step="0.01" name="weight" value={formData.weight} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0.00" />
                 <select name="weightUnit" value={formData.weightUnit} onChange={handleChange} className="rounded-xl border-gray-200 bg-gray-50 px-3">
                   <option>grams</option>
                   <option>kg</option>
@@ -435,7 +435,7 @@ export function AddProduct() {
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Certificate Type</span>
-              <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" />
+              <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. BIS Hallmarked, IGI Certified" />
             </label>
           </div>
         </div>

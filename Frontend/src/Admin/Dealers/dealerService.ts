@@ -1,26 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-} from 'firebase/firestore';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from 'firebase/storage';
-import { dbFirestore, storage } from '../../lib/firebase';
-
-const dealersCollection = collection(dbFirestore, 'dealers');
-const purchasesCollection = collection(dbFirestore, 'dealerPurchases');
-const paymentsCollection = collection(dbFirestore, 'dealerPayments');
+import api from '../../api';
 
 export type Dealer = {
   id?: string;
@@ -76,111 +54,106 @@ export type DealerPayment = {
   createdAt?: string;
 };
 
-export async function uploadDealerProfileImage(dealerId: string, file: File) {
-  const storageRef = ref(storage, `dealers/${dealerId}/profile/${file.name}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  return getDownloadURL(snapshot.ref);
+export async function uploadDealerProfileImage(dealerId: string, file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', file);
+  
+  const response = await api.put(`/dealers/${dealerId}/profile-image`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data.imageUrl || response.data.profileImageUrl;
 }
 
-export async function uploadDealerReceipt(dealerId: string, file: File) {
-  const storageRef = ref(storage, `dealers/${dealerId}/receipts/${uuidv4()}_${file.name}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  return getDownloadURL(snapshot.ref);
+export async function uploadDealerReceipt(dealerId: string, file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('receipt', file);
+  
+  const response = await api.post(`/dealers/${dealerId}/receipts`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data.receiptUrl;
 }
 
 export async function getDealers(): Promise<Dealer[]> {
-  const snapshot = await getDocs(query(dealersCollection, orderBy('createdAt', 'desc')));
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as Dealer) }));
+  const response = await api.get('/dealers');
+  return response.data || [];
 }
 
 export async function getDealerById(id: string): Promise<Dealer | null> {
-  const docRef = doc(dbFirestore, 'dealers', id);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? ({ id: docSnap.id, ...(docSnap.data() as Dealer) }) : null;
+  try {
+    const response = await api.get(`/dealers/${id}`);
+    return response.data || null;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function createDealer(data: Omit<Dealer, 'id' | 'createdAt'>): Promise<Dealer> {
-  const dealerId = data.dealerId || `DLR-${Date.now()}`;
   const payload = {
     ...data,
-    dealerId,
+    dealerId: data.dealerId || `DLR-${Date.now()}`,
     openingBalance: Number(data.openingBalance ?? 0),
-    createdAt: new Date().toISOString(),
   };
-  const docRef = await addDoc(dealersCollection, payload);
-  return { id: docRef.id, ...payload } as Dealer;
+  const response = await api.post('/dealers', payload);
+  return response.data;
 }
 
-export async function updateDealer(id: string, updates: Partial<Dealer>) {
-  const docRef = doc(dbFirestore, 'dealers', id);
+export async function updateDealer(id: string, updates: Partial<Dealer>): Promise<Dealer> {
   const payload: Partial<Dealer> = { ...updates };
-
   if (payload.openingBalance !== undefined) {
     payload.openingBalance = Number(payload.openingBalance);
   }
-
-  const updatePayload = Object.fromEntries(
-    Object.entries(payload).filter(([, value]) => value !== undefined)
-  ) as Partial<Dealer>;
-
-  await updateDoc(docRef, updatePayload);
-  return { id, ...(updates as Dealer) } as Dealer;
+  const response = await api.put(`/dealers/${id}`, payload);
+  return response.data;
 }
 
-export async function deleteDealer(id: string) {
-  const docRef = doc(dbFirestore, 'dealers', id);
-  await deleteDoc(docRef);
+export async function deleteDealer(id: string): Promise<void> {
+  await api.delete(`/dealers/${id}`);
 }
 
 export async function getDealerPurchases(dealerId: string): Promise<DealerPurchase[]> {
-  const q = query(
-    purchasesCollection,
-    where('dealerId', '==', dealerId),
-    orderBy('purchaseDate', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as DealerPurchase) }));
+  const response = await api.get(`/dealers/${dealerId}/purchases`);
+  return response.data || [];
 }
 
 export async function getDealerPayments(dealerId: string): Promise<DealerPayment[]> {
-  const q = query(
-    paymentsCollection,
-    where('dealerId', '==', dealerId),
-    orderBy('paymentDate', 'desc')
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as DealerPayment) }));
+  const response = await api.get(`/dealers/${dealerId}/payments`);
+  return response.data || [];
 }
 
-export async function createDealerPurchase(purchase: Omit<DealerPurchase, 'id' | 'createdAt'>) {
-  const docRef = await addDoc(purchasesCollection, {
+export async function createDealerPurchase(purchase: Omit<DealerPurchase, 'id' | 'createdAt'>): Promise<DealerPurchase> {
+  const payload = {
     ...purchase,
     weight: Number(purchase.weight),
     goldRate: Number(purchase.goldRate),
     makingCharges: Number(purchase.makingCharges),
     totalAmount: Number(purchase.totalAmount),
-    createdAt: new Date().toISOString(),
-  });
-  return { id: docRef.id, ...purchase } as DealerPurchase;
+  };
+  const response = await api.post('/dealerPurchases', payload);
+  return response.data;
 }
 
-export async function createDealerPayment(payment: Omit<DealerPayment, 'id' | 'createdAt'>) {
-  const docRef = await addDoc(paymentsCollection, {
+export async function createDealerPayment(payment: Omit<DealerPayment, 'id' | 'createdAt'>): Promise<DealerPayment> {
+  const payload = {
     ...payment,
     amount: Number(payment.amount),
-    createdAt: new Date().toISOString(),
-  });
-  return { id: docRef.id, ...payment } as DealerPayment;
+  };
+  const response = await api.post('/dealerPayments', payload);
+  return response.data;
 }
 
 export async function getAllDealerPurchases(): Promise<DealerPurchase[]> {
-  const snapshot = await getDocs(query(purchasesCollection, orderBy('purchaseDate', 'desc')));
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as DealerPurchase) }));
+  const response = await api.get('/dealerPurchases');
+  return response.data || [];
 }
 
 export async function getAllDealerPayments(): Promise<DealerPayment[]> {
-  const snapshot = await getDocs(query(paymentsCollection, orderBy('paymentDate', 'desc')));
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...(docSnap.data() as DealerPayment) }));
+  const response = await api.get('/dealerPayments');
+  return response.data || [];
 }
 
 export type LedgerEntry = {

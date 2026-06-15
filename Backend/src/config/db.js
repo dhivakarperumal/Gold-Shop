@@ -134,6 +134,74 @@ async function initializeDatabase() {
     console.log('Customers table initialized');
 
     await connection.execute(`
+      CREATE TABLE IF NOT EXISTS dealers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        dealer_id VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        company_name VARCHAR(255),
+        contact_person VARCHAR(255),
+        mobile_number VARCHAR(20),
+        alternate_mobile_number VARCHAR(20),
+        email_address VARCHAR(255),
+        gst_number VARCHAR(50),
+        pan_number VARCHAR(50),
+        address TEXT,
+        city VARCHAR(100),
+        state VARCHAR(100),
+        pincode VARCHAR(20),
+        business_type VARCHAR(100),
+        bank_name VARCHAR(255),
+        account_number VARCHAR(100),
+        ifsc_code VARCHAR(50),
+        opening_balance DECIMAL(12,2) DEFAULT 0,
+        status ENUM('Active', 'Inactive') DEFAULT 'Active',
+        notes TEXT,
+        profile_image_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Dealers table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS dealer_purchases (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        dealer_id VARCHAR(100) NOT NULL,
+        invoice_number VARCHAR(100) NOT NULL,
+        purchase_date DATE,
+        product_details TEXT,
+        gold_purity VARCHAR(100),
+        weight DECIMAL(10,3),
+        gold_rate DECIMAL(12,2),
+        making_charges DECIMAL(12,2),
+        total_amount DECIMAL(12,2),
+        payment_status ENUM('Paid', 'Pending', 'Partially Paid') DEFAULT 'Pending',
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (dealer_id) REFERENCES dealers(dealer_id)
+      )
+    `);
+    console.log('Dealer purchases table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS dealer_payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        dealer_id VARCHAR(100) NOT NULL,
+        payment_date DATE,
+        payment_mode VARCHAR(50) DEFAULT 'Cash',
+        reference_number VARCHAR(100),
+        amount DECIMAL(12,2),
+        remarks TEXT,
+        receipt_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (dealer_id) REFERENCES dealers(dealer_id)
+      )
+    `);
+    console.log('Dealer payments table initialized');
+
+    await connection.execute(`
       CREATE TABLE IF NOT EXISTS loans (
         id INT AUTO_INCREMENT PRIMARY KEY,
         customer_id VARCHAR(100) NOT NULL,

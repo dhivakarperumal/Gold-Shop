@@ -8,6 +8,9 @@ const productRoutes = require('./src/routers/productRoutes');
 const customerRoutes = require('./src/routers/customerRoutes');
 const loansRoutes = require('./src/routers/loansRoutes');
 const paymentRoutes = require('./src/routers/paymentRoutes');
+const dealerRoutes = require('./src/routers/dealerRoutes');
+const dealerPurchaseRoutes = require('./src/routers/dealerPurchaseRoutes');
+const dealerPaymentRoutes = require('./src/routers/dealerPaymentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +35,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/dealers', dealerRoutes);
+app.use('/api/dealerPurchases', dealerPurchaseRoutes);
+app.use('/api/dealerPayments', dealerPaymentRoutes);
 
 // Start server
 app.listen(PORT, async () => {
