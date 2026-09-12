@@ -65,7 +65,7 @@ export function Login() {
       </section>
 
       <section className="login-panel">
-        <Link to="/" className="back-home"><ArrowLeft size={18} /> Back to Home</Link>
+       
         <div className="login-card">
           <div className="login-heading">
             <h2>Welcome Back!</h2>
@@ -101,7 +101,7 @@ export function Login() {
 
             <div className="or-divider"><span /> OR <span /></div>
             <button type="button" className="social-button"><b className="google-icon">G</b> Continue with Google</button>
-            <button type="button" className="social-button"><b className="facebook-icon">f</b> Continue with Facebook</button>
+            
 
             <p className="signup-prompt">Don't have an account? <Link to="/register">Sign Up</Link></p>
           </form>
