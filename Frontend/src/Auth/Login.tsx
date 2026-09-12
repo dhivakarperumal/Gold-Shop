@@ -73,18 +73,24 @@ export function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
-            <label className="input-shell">
-              <Mail size={20} />
-              <input name="email" type="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} required />
-            </label>
+            <div className="field-group">
+              <span className="field-label">Email address</span>
+              <label className="input-shell">
+                <Mail size={20} />
+                <input name="email" type="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} required />
+              </label>
+            </div>
 
-            <label className="input-shell">
-              <LockKeyhole size={20} />
-              <input type={showPassword ? "text" : "password"} name="password" placeholder="Enter your password" value={form.password} onChange={handleChange} required />
-              <button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </label>
+            <div className="field-group">
+              <span className="field-label">Password</span>
+              <label className="input-shell">
+                <LockKeyhole size={20} />
+                <input type={showPassword ? "text" : "password"} name="password" placeholder="Enter your password" value={form.password} onChange={handleChange} required />
+                <button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </label>
+            </div>
 
             <div className="login-options">
               <label className="remember-me"><input type="checkbox" /> <span>Remember me</span></label>

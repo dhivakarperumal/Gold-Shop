@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Gem, LockKeyhole, Mail, Phone, ShieldCheck, Truck, UserRound } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import api from "../api";
+import "./Login.css";
+import "./Register.css";
 
 export function Register() {
   const navigate = useNavigate();
@@ -52,109 +54,43 @@ export function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f5f6f8] px-4 font-sans">
-      <div className="w-[450px] bg-white border border-gray-200 shadow-2xl rounded-2xl p-8">
-        <h2 className="text-2xl font-bold text-center mb-2 text-gray-900">
-          Create Account
-        </h2>
-        <p className="text-center text-gray-500 mb-8 text-sm">
-          Join Kanak Gold Management System
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Username</label>
-            <input
-              name="username"
-              placeholder="Username"
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-              required
-            />
+    <div className="login-page register-page">
+      <section className="login-showcase" aria-label="Kanak Gold jewellery">
+        <Link to="/" className="login-brand">
+          <span className="login-brand-mark">K</span>
+          <span><strong>Kanak Gold</strong><small>PURE GOLD, PURE TRUST</small></span>
+        </Link>
+        <div className="showcase-copy">
+          <p className="eyebrow"><span /> YOUR GOLDEN JOURNEY</p>
+          <h1>Begin Your<br /><em>Golden</em><br />Journey.</h1>
+          <p className="showcase-description">Create your Kanak Gold account and discover thoughtfully crafted jewellery made for the moments you will remember.</p>
+          <div className="showcase-benefits">
+            <div><span className="benefit-icon"><Gem /></span><p><strong>Curated Collections</strong><small>Jewellery made for your style</small></p></div>
+            <div><span className="benefit-icon"><ShieldCheck /></span><p><strong>Trusted Craftsmanship</strong><small>BIS Hallmarked Gold</small></p></div>
+            <div><span className="benefit-icon"><Truck /></span><p><strong>Gifts, Delivered</strong><small>Beautiful moments at your door</small></p></div>
           </div>
+          <p className="showcase-tagline">Your Story<br /><span>Starts in Gold</span></p>
+        </div>
+        <div className="jewellery-image" aria-hidden="true" />
+      </section>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="email@example.com"
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-            <input
-              name="phone"
-              type="text"
-              placeholder="9876543210"
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="••••••••"
-                onChange={handleChange}
-                className="w-full p-3 pr-10 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+      <section className="login-panel register-panel">
+        <Link to="/" className="back-home"><ArrowLeft size={18} /> Back to Home</Link>
+        <div className="login-card register-card">
+          <div className="login-heading"><h2>Create Account</h2><p>Join the Kanak Gold family today</p></div>
+          <form onSubmit={handleSubmit} className="login-form register-form">
+            <div className="field-group"><span className="field-label">Full name</span><label className="input-shell"><UserRound size={20} /><input name="username" placeholder="Enter your full name" value={form.username} onChange={handleChange} required /></label></div>
+            <div className="field-group"><span className="field-label">Email address</span><label className="input-shell"><Mail size={20} /><input name="email" type="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} required /></label></div>
+            <div className="field-group"><span className="field-label">Phone number</span><label className="input-shell"><Phone size={20} /><input name="phone" type="tel" placeholder="Enter your phone number" value={form.phone} onChange={handleChange} required /></label></div>
+            <div className="register-passwords">
+              <div className="field-group"><span className="field-label">Password</span><label className="input-shell"><LockKeyhole size={20} /><input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={form.password} onChange={handleChange} required /><button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button></label></div>
+              <div className="field-group"><span className="field-label">Confirm password</span><label className="input-shell"><LockKeyhole size={20} /><input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Confirm password" value={form.confirmPassword} onChange={handleChange} required /><button type="button" className="password-toggle" aria-label={showConfirmPassword ? "Hide password" : "Show password"} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button></label></div>
             </div>
-
-            <div className="relative">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm</label>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="••••••••"
-                onChange={handleChange}
-                className="w-full p-3 pr-10 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-600"
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 mt-4 rounded-lg text-white font-bold bg-[#1b88f3] hover:bg-[#1569c7] transition-all duration-300 shadow-md cursor-pointer"
-          >
-            Register
-          </button>
-
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Already have an account?{" "}
-            <span
-              onClick={() => navigate("/login")}
-              className="text-[#1b88f3] font-bold hover:underline cursor-pointer"
-            >
-              Sign in
-            </span>
-          </p>
-        </form>
-      </div>
+            <button type="submit" className="login-submit">Create Account <ArrowRight size={23} /></button>
+            <p className="signup-prompt">Already have an account? <Link to="/login">Sign In</Link></p>
+          </form>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,20 @@
+.register-page .jewellery-image { background-image: linear-gradient(90deg, #fbf7ee00, #f4d8a433), url('/Gold Shop Images/shopping (10).webp'); }
+.register-page .showcase-copy { margin-top: 54px; }
+
+.register-page .login-panel { padding-top: 34px; }
+.register-card { width: min(100%, 475px); padding-top: 31px; padding-bottom: 30px; }
+.register-card .login-heading p { margin-bottom: 19px; }
+.register-form { gap: 11px; }
+.register-passwords { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.register-passwords .input-shell { gap: 9px; padding-left: 11px; }
+.register-passwords .input-shell input { font-size: 13px; }
+.register-form .login-submit { margin-top: 5px; }
+
+@media (max-width: 900px) {
+  .register-page .login-panel { padding-top: 25px; }
+  .register-card { margin: auto 0; }
+}
+
+@media (max-width: 520px) {
+  .register-passwords { grid-template-columns: 1fr; }
+}

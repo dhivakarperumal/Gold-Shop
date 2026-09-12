@@ -31,6 +31,8 @@
 .login-heading h2 { margin: 0; font: 700 34px/1.1 'Playfair Display', Georgia, serif; letter-spacing: -1px; }
 .login-heading p { margin: 6px 0 23px; color: #78839a; font-size: 16px; }
 .login-form { display: grid; gap: 13px; }
+.field-group { display: grid; gap: 6px; }
+.field-label { color: #344057; font-size: 12px; font-weight: 700; }
 .input-shell { display: flex; align-items: center; gap: 14px; min-height: 49px; padding: 0 14px; color: #7d899d; border: 1px solid #e1e2e5; border-radius: 11px; transition: border .2s, box-shadow .2s; }
 .input-shell:focus-within { border-color: #e6a11b; box-shadow: 0 0 0 3px #e6a11b1c; }
 .input-shell input { width: 100%; min-width: 0; border: 0; outline: 0; color: #17223a; font: inherit; font-size: 14px; }
