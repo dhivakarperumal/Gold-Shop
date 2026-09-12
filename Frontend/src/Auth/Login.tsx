@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react";
-import { Link, Navigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Gem, LockKeyhole, Mail, ShieldCheck, Truck } from "lucide-react";
 import api from "../api";
+import "./Login.css";
 
 export function Login() {
   const navigate = useNavigate();
@@ -40,72 +40,67 @@ export function Login() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f5f6f8] px-4 font-sans">
-      <div className="w-[380px] bg-white border border-gray-200 shadow-xl rounded-2xl px-6 py-8">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-[#1b88f3]/10 rounded-full mx-auto flex items-center justify-center mb-4">
-             <span className="text-[#1b88f3] font-bold text-2xl">KG</span>
+    <div className="login-page">
+      <section className="login-showcase" aria-label="Kanak Gold jewellery">
+        <Link to="/" className="login-brand">
+          <span className="login-brand-mark">K</span>
+          <span>
+            <strong>Kanak Gold</strong>
+            <small>PURE GOLD, PURE TRUST</small>
+          </span>
+        </Link>
+
+        <div className="showcase-copy">
+          <p className="eyebrow"><span /> PREMIUM GOLD JEWELLERY</p>
+          <h1>Timeless <em>Gold</em><br />for Every<br />Occasion.</h1>
+          <p className="showcase-description">Discover exquisite BIS hallmarked jewellery crafted with precision. From daily wear elegance to bridal grandeur.</p>
+          <div className="showcase-benefits">
+            <div><span className="benefit-icon"><Gem /></span><p><strong>100% Authentic</strong><small>BIS Hallmarked Gold</small></p></div>
+            <div><span className="benefit-icon"><ShieldCheck /></span><p><strong>Secure Shopping</strong><small>Your Safety, Our Priority</small></p></div>
+            <div><span className="benefit-icon"><Truck /></span><p><strong>Free Shipping</strong><small>On all orders above ₹10,000</small></p></div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Welcome Back
-          </h2>
-          <p className="text-center text-gray-500 mt-2 text-sm">
-            Sign in to Kanak Gold management
-          </p>
+          <p className="showcase-tagline">Gold Makes<br /><span>Moments Special</span></p>
         </div>
+        <div className="jewellery-image" aria-hidden="true" />
+      </section>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="email@example.com"
-              onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-              required
-            />
+      <section className="login-panel">
+        <Link to="/" className="back-home"><ArrowLeft size={18} /> Back to Home</Link>
+        <div className="login-card">
+          <div className="login-heading">
+            <h2>Welcome Back!</h2>
+            <p>Login to continue to Kanak Gold</p>
           </div>
 
-          <div className="relative">
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="••••••••"
-              onChange={handleChange}
-              className="w-full p-3 pr-10 rounded-lg bg-white border border-gray-300 focus:ring-2 focus:ring-[#1b88f3]/20 focus:border-[#1b88f3] outline-none transition-all"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[38px] text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
+          <form onSubmit={handleSubmit} className="login-form">
+            <label className="input-shell">
+              <Mail size={20} />
+              <input name="email" type="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} required />
+            </label>
 
-          <button
-            type="submit"
-            className="w-full py-3 rounded-lg text-white font-bold bg-[#1b88f3] hover:bg-[#1569c7] transition-all duration-300 shadow-md cursor-pointer"
-          >
-            Sign In
-          </button>
+            <label className="input-shell">
+              <LockKeyhole size={20} />
+              <input type={showPassword ? "text" : "password"} name="password" placeholder="Enter your password" value={form.password} onChange={handleChange} required />
+              <button type="button" className="password-toggle" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </label>
 
-          
+            <div className="login-options">
+              <label className="remember-me"><input type="checkbox" /> <span>Remember me</span></label>
+              <button type="button" className="forgot-password">Forgot password?</button>
+            </div>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Don’t have an account?{" "}
-            <Link
-              to="/register"
-              className="text-[#1b88f3] font-bold hover:underline"
-            >
-              Contact Admin
-            </Link>
-          </p>
-        </form>
-      </div>
+            <button type="submit" className="login-submit">Login <ArrowRight size={23} /></button>
+
+            <div className="or-divider"><span /> OR <span /></div>
+            <button type="button" className="social-button"><b className="google-icon">G</b> Continue with Google</button>
+            <button type="button" className="social-button"><b className="facebook-icon">f</b> Continue with Facebook</button>
+
+            <p className="signup-prompt">Don't have an account? <Link to="/register">Sign Up</Link></p>
+          </form>
+        </div>
+      </section>
     </div>
   );
 }

@@ -29,6 +29,7 @@ import { AddProduct } from "./Admin/Products/AddProduct";
 import { Categories } from "./Admin/Products/Categories";
 import { StockDetails } from "./Admin/Products/StockDetails";
 import { Home } from "./pages/Home";
+import { ProductDetails } from "./pages/ProductDetails";
 import Loader from "./components/CommonComponents/Loader";
 import { Toaster } from "./components/CommonComponents/Toaster";
 import { PrivateRoute } from "./context/PrivateRoute";
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
+      { path: "product/:id", element: <ProductDetails /> }
     ]
   },
 
