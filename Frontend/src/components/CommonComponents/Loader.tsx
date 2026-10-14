@@ -1,11 +1,7 @@
-import React from 'react';
-
-const Loader: React.FC = () => {
+export default function Loader() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b88f3]"></div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50" role="status" aria-label="Loading">
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-primary" />
     </div>
   );
-};
-
-export default Loader;
+}

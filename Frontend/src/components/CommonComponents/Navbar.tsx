@@ -1,6 +1,9 @@
+import PageContainer from './PageContainer.jsx';
+
 export default function Navbar() {
   return (
-    <div className="w-full bg-primary text-white py-2 px-6 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider font-sans z-[60] fixed top-0 h-10 shadow-sm leading-none">
+    <div className="fixed top-0 z-[60] h-10 w-full bg-primary font-sans text-[11px] font-bold uppercase tracking-wider text-white shadow-sm leading-none">
+      <PageContainer className="flex h-full items-center justify-between">
       {/* Left: Contact Info */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 hover:text-white/80 transition-colors cursor-pointer">
@@ -43,6 +46,7 @@ export default function Navbar() {
           </a>
         </div>
       </div>
+      </PageContainer>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import PageContainer from './PageContainer.jsx';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -20,7 +21,8 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-10 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between font-sans h-16">
+    <header className="fixed top-10 z-50 h-16 w-full border-b border-gray-100 bg-white/80 font-sans backdrop-blur-md">
+      <PageContainer className="flex h-full items-center justify-between">
       {/* Left: Logo */}
       <Link to="/" className="flex items-center gap-2">
         <div className="w-8 h-8 bg-accent rounded flex items-center justify-center text-white font-bold">S</div>
@@ -166,6 +168,7 @@ export default function Header() {
           </Link>
         )}
       </div>
+      </PageContainer>
     </header>
   );
 }
