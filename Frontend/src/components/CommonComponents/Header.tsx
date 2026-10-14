@@ -85,13 +85,13 @@ export default function Header() {
       {/* Right: Icons & Profile */}
       <div className="flex items-center gap-5">
         {/* Cart & Fav Icons */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-gray-600 transition-colors hover:bg-brand-100 hover:text-secondary-dark">
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary">
           <Heart className="w-5 h-5" />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-gray-600 transition-colors hover:bg-brand-100 hover:text-secondary-dark">
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary">
           <ShoppingCart className="w-5 h-5" />
-          <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <span className="absolute -top-2 -right-2 bg-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
         </button>
 
         <div className="h-4 w-[1px] bg-gray-200 hidden sm:block mx-1"></div>
