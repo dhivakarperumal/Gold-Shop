@@ -1,5 +1,4 @@
 import { ArrowRight, Facebook, Heart, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react';
-import { type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { categories } from '../../lib/categoryData';
 import PageContainer from './PageContainer.jsx';
@@ -21,16 +20,6 @@ const storeAddress = '18/09 Valasaravakkam, Chennai - 600087, Tamil Nadu, India'
 const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=18%2F09%20Valasaravakkam%2C%20Chennai%2C%20600087%2C%20Tamil%20Nadu%2C%20India';
 
 export default function Footer() {
-  const handleSubscribe = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const email = new FormData(event.currentTarget).get('newsletter-email')?.toString().trim();
-    if (!email) return;
-
-    const subject = encodeURIComponent('Newsletter subscription request');
-    const body = encodeURIComponent(`Please subscribe ${email} to your newsletter.`);
-    window.location.href = `mailto:support@kanakgold.com?subject=${subject}&body=${body}`;
-  };
-
   return (
     <footer className="bg-primary font-sans text-[#f9e8b2]">
       <PageContainer className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -103,30 +92,18 @@ export default function Footer() {
 
         <div className="min-w-0">
           <h2 className="mb-5 text-sm font-bold text-white">Google Map</h2>
-          <form onSubmit={handleSubscribe} className="flex overflow-hidden rounded-lg border border-white/20">
-            <label htmlFor="newsletter-email" className="sr-only">Your email address</label>
-            <input
-              id="newsletter-email"
-              name="newsletter-email"
-              type="email"
-              placeholder="Your email address"
-              required
-              className="min-w-0 flex-1 bg-primary-dark px-3 py-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-            <button type="submit" className="flex items-center gap-1 bg-accent px-3 text-sm font-bold text-primary transition-colors hover:bg-secondary-light">
-              Subscribe
-            </button>
-          </form>
-          <p className="mt-2 text-xs text-white/60">Opens your email app to request updates.</p>
-          <p className="mt-5 flex items-start gap-3 text-sm leading-6 text-[#ead7b5]">
-            <MapPin className="mt-1 h-4 w-4 shrink-0 text-accent" />
-            {storeAddress}
-          </p>
+          <iframe
+            title="Sri Vengateshwara location map"
+            src="https://www.google.com/maps?q=18%2F09%20Valasaravakkam%2C%20Chennai%20600087%2C%20Tamil%20Nadu%2C%20India&output=embed"
+            className="h-28 w-full rounded-lg border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
           <a
             href={googleMapsUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-accent px-4 py-2.5 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-primary"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg border border-accent px-4 py-2.5 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-primary"
           >
             View on Google Maps <ArrowRight className="h-4 w-4" />
           </a>

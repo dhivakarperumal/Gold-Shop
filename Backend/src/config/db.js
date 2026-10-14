@@ -93,6 +93,24 @@ async function initializeDatabase() {
     console.log('Products table initialized');
 
     await connection.execute(`
+      CREATE TABLE IF NOT EXISTS banners (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        subtitle VARCHAR(255),
+        description TEXT,
+        image TEXT NOT NULL,
+        mobile_image TEXT,
+        link TEXT,
+        type ENUM('hero', 'offer') DEFAULT 'hero',
+        active TINYINT(1) DEFAULT 1,
+        user_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Banners table initialized');
+
+    await connection.execute(`
       CREATE TABLE IF NOT EXISTS customers (
         id INT AUTO_INCREMENT PRIMARY KEY,
         customer_id VARCHAR(100) UNIQUE NOT NULL,

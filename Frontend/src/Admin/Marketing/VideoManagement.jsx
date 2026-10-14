@@ -1,23 +1,22 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useAdmin } from "../../PrivateRouter/AdminContext";
 import api, { BACKEND_BASE_URL } from "../../api";
 import {
-    FiPlus,
-    FiSearch,
-    FiEdit2,
-    FiTrash2,
-    FiVideo,
-    FiX,
-    FiPlay,
-    FiUploadCloud,
-    FiGrid,
-    FiList,
-    FiCheck,
-    FiSlash
-} from "react-icons/fi";
+    Plus as FiPlus,
+    Search as FiSearch,
+    Pencil as FiEdit2,
+    Trash2 as FiTrash2,
+    Video as FiVideo,
+    X as FiX,
+    Play as FiPlay,
+    UploadCloud as FiUploadCloud,
+    Grid2X2 as FiGrid,
+    List as FiList,
+    Check as FiCheck,
+    Ban as FiSlash
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useAuth } from "../../PrivateRouter/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const getYoutubeId = (value) => {
     if (!value) return "";
@@ -40,9 +39,8 @@ const resolveMediaUrl = (url) => {
 
 const VideoManagement = () => {
     const { user } = useAuth();
-    const { videosCache, setVideosCache } = useAdmin();
-    const [videos, setVideos] = useState(videosCache || []);
-    const [loading, setLoading] = useState(!videosCache);
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentVideo, setCurrentVideo] = useState({ title: "", videoId: "", thumbnail: "", type: "youtube" });
@@ -52,12 +50,11 @@ const VideoManagement = () => {
     const [viewMode, setViewMode] = useState("table");
 
     const fetchVideos = async () => {
-        if (!videosCache) setLoading(true);
+        setLoading(true);
         try {
             const response = await api.get("/videos");
             const data = Array.isArray(response.data) ? response.data : [];
             setVideos(data);
-            setVideosCache(data);
         } catch (error) {
             console.error("Error fetching videos:", error);
             toast.error("Failed to load videos");
@@ -142,7 +139,7 @@ const VideoManagement = () => {
         try {
             const videoPayload = {
                 ...currentVideo,
-                user_id: user?.user_id || currentVideo.user_id || null,
+                user_id: user?.id || currentVideo.user_id || null,
             };
             if (isEditing) {
                 await api.put(`/videos/${currentVideo.id}`, videoPayload);

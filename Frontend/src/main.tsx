@@ -28,11 +28,13 @@ import { Products } from "./Admin/Products/Products";
 import { AddProduct } from "./Admin/Products/AddProduct";
 import { Categories } from "./Admin/Products/Categories";
 import { StockDetails } from "./Admin/Products/StockDetails";
-import { Home } from "./pages/Home";
+import Home from "./components/Home/Home.jsx";
 import { ProductDetails } from "./pages/ProductDetails";
 import Loader from "./components/CommonComponents/Loader.tsx";
 import { Toaster } from "./components/CommonComponents/Toaster";
 import { PrivateRoute } from "./context/PrivateRoute";
+import BannerManagement from "./Admin/Marketing/BannerManagement.jsx";
+import VideoManagement from "./Admin/Marketing/VideoManagement.jsx";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -79,7 +81,23 @@ const router = createBrowserRouter([
       { path: "dealers/payments", element: <DealerPayment /> },
       { path: "dealers/ledger", element: <DealerLedger /> },
       { path: "dealers/reports", element: <DealerReports /> },
-      { path: "reports", element: <Reports /> }
+      { path: "reports", element: <Reports /> },
+      {
+        path: "marketing/banners",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "user"]}>
+            <BannerManagement />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "marketing/videos",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "user"]}>
+            <VideoManagement />
+          </PrivateRoute>
+        )
+      }
     ]
   },
 

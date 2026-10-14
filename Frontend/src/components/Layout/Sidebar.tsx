@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive } from 'lucide-react';
+import { LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -14,6 +14,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [productsOpen, setProductsOpen] = useState(
     location.pathname.startsWith('/admin/products')
   );
+  const [marketingOpen, setMarketingOpen] = useState(
+    location.pathname.startsWith('/admin/marketing')
+  );
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['admin', 'user'], end: true },
@@ -26,10 +29,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   ];
 
   const filteredNavItems = navItems.filter(item => 
-    user && item.roles.includes(user.role as any)
+    user && item.roles.some(role => role === user.role)
   );
 
   const productSectionActive = location.pathname.startsWith('/admin/products');
+  const marketingSectionActive = location.pathname.startsWith('/admin/marketing');
 
   return (
     <>
@@ -163,6 +167,57 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   Stock Details
                 </NavLink>
               </div>
+            )}
+
+            {user && ['admin', 'user'].includes(user.role) && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setMarketingOpen(!marketingOpen)}
+                  aria-expanded={marketingOpen}
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    marketingSectionActive
+                      ? 'bg-[#2b58b4] text-white shadow-sm'
+                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <Megaphone className="w-5 h-5" />
+                    Marketing
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${marketingOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {marketingOpen && (
+                  <div className="space-y-1 pl-8">
+                    <NavLink
+                      to="/admin/marketing/banners"
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[#2b58b4] text-white shadow-sm'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        }`
+                      }
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      Banner Management
+                    </NavLink>
+                    <NavLink
+                      to="/admin/marketing/videos"
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[#2b58b4] text-white shadow-sm'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        }`
+                      }
+                    >
+                      <Video className="w-4 h-4" />
+                      Video Management
+                    </NavLink>
+                  </div>
+                )}
+              </>
             )}
           </nav>
         </div>

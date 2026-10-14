@@ -2,21 +2,21 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import api, { BACKEND_BASE_URL } from "../../api";
 import {
-    FiPlus,
-    FiSearch,
-    FiEdit2,
-    FiTrash2,
-    FiImage,
-    FiX,
-    FiUploadCloud,
-    FiLink,
-    FiFileText,
-    FiGrid,
-    FiList,
-    FiFilter
-} from "react-icons/fi";
+    Plus as FiPlus,
+    Search as FiSearch,
+    Pencil as FiEdit2,
+    Trash2 as FiTrash2,
+    Image as FiImage,
+    X as FiX,
+    UploadCloud as FiUploadCloud,
+    Link as FiLink,
+    FileText as FiFileText,
+    Grid2X2 as FiGrid,
+    List as FiList,
+    Filter as FiFilter
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useAuth } from "../../PrivateRouter/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const BannerManagement = () => {
     const { user } = useAuth();
@@ -100,7 +100,7 @@ const BannerManagement = () => {
             formData.append("folder", "banners");
             formData.append("file", file);
 
-            const response = await api.post("/upload", formData);
+            const response = await api.post("/banners/upload", formData);
             const imageUrl = response?.data?.url || response?.data?.urls?.[0] || "";
 
             if (isMobile) {
@@ -123,7 +123,7 @@ const BannerManagement = () => {
         try {
             const bannerPayload = {
                 ...currentBanner,
-                user_id: user?.user_id || currentBanner.user_id || null,
+                user_id: user?.id || currentBanner.user_id || null,
             };
             if (isEditing) {
                 await api.put(`/banners/${currentBanner.id}`, bannerPayload);

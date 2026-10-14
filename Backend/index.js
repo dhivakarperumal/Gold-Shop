@@ -11,6 +11,7 @@ const paymentRoutes = require('./src/routers/paymentRoutes');
 const dealerRoutes = require('./src/routers/dealerRoutes');
 const dealerPurchaseRoutes = require('./src/routers/dealerPurchaseRoutes');
 const dealerPaymentRoutes = require('./src/routers/dealerPaymentRoutes');
+const bannerRoutes = require('./src/routers/bannerRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/dealers', dealerRoutes);
 app.use('/api/dealerPurchases', dealerPurchaseRoutes);
 app.use('/api/dealerPayments', dealerPaymentRoutes);
+app.use('/api/banners', bannerRoutes);
 
 // Start server
 app.listen(PORT, async () => {
