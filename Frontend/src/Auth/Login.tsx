@@ -41,11 +41,11 @@ export function Login() {
 
   return (
     <div className="login-page">
-      <section className="login-showcase" aria-label="Kanak Gold jewellery">
+      <section className="login-showcase" aria-label="Sri Vengateshwara jewellery">
         <Link to="/" className="login-brand">
-          <span className="login-brand-mark">K</span>
+          <span className="login-brand-mark">S</span>
           <span>
-            <strong>Kanak Gold</strong>
+            <strong>Sri Vengateshwara</strong>
             <small>PURE GOLD, PURE TRUST</small>
           </span>
         </Link>
@@ -69,7 +69,7 @@ export function Login() {
         <div className="login-card">
           <div className="login-heading">
             <h2>Welcome Back!</h2>
-            <p>Login to continue to Kanak Gold</p>
+            <p>Login to continue to Sri Vengateshwara</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">

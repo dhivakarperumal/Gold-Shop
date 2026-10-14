@@ -6,49 +6,54 @@ body {
 }
 
 /* Theme variables */
+
 @theme {
   --font-sans: "Josefin Sans", sans-serif;
 
-  /* Brand Colors (Used in UI classes like bg-brand-500) */
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #7b2cbf;
-  --color-brand-600: #5a189a;
-  --color-brand-700: #3c096c;
-  --color-brand-800: #240046;
-  --color-brand-900: #10002b;
-  --color-brand-950: #0a001a;
+  /* Brand Colors - Premium Gold */
+  --color-brand-50: #FFFCF7;
+  --color-brand-100: #FFF4DE;
+  --color-brand-200: #FDE4B0;
+  --color-brand-300: #FBD080;
+  --color-brand-400: #F5AD35;
+  --color-brand-500: #D97700;
+  --color-brand-600: #C26700;
+  --color-brand-700: #9A5000;
+  --color-brand-800: #713C08;
+  --color-brand-900: #4A2909;
+  --color-brand-950: #2B1806;
 
-  /* Legacy primary/secondary mappings (Optional, keeping for compatibility) */
-  --color-primary: #240046;
-  --color-primary-light: #3c096c;
-  --color-primary-dark: #10002b;
+  /* Primary - Navy Blue */
+  --color-primary: #111C36;
+  --color-primary-light: #263653;
+  --color-primary-dark: #091126;
 
-  /* Secondary */
-  --color-secondary: #7b2cbf;
-  --color-secondary-light: #9d4edd;
-  --color-secondary-dark: #5a189a;
+  /* Secondary - Gold */
+  --color-secondary: #D97700;
+  --color-secondary-light: #FFB000;
+  --color-secondary-dark: #9A5000;
 
   /* Accent */
-  --color-accent: #ff8500;
+  --color-accent: #FFB000;
 
   /* Success / Green */
-  --color-success: #16a34a;
+  --color-success: #15803D;
 
   /* Warning / Yellow */
-  --color-warning: #facc15;
+  --color-warning: #FACC15;
 
   /* Danger / Error */
-  --color-danger: #dc2626;
+  --color-danger: #DC2626;
 
   /* Neutral Colors */
-  --color-background: #f8f9fa;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-muted: #6b7280;
+  --color-background: #FFFCF7;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-muted: #64748B;
+
+  /* Additional UI Colors */
+  --color-gold-cream: #FDF0D1;
+  --color-placeholder: #94A3B8;
 }
 
 @layer utilities {

@@ -55,15 +55,15 @@ export function Register() {
 
   return (
     <div className="login-page register-page">
-      <section className="login-showcase" aria-label="Kanak Gold jewellery">
+      <section className="login-showcase" aria-label="Sri Vengateshwara jewellery">
         <Link to="/" className="login-brand">
-          <span className="login-brand-mark">K</span>
-          <span><strong>Kanak Gold</strong><small>PURE GOLD, PURE TRUST</small></span>
+          <span className="login-brand-mark">S</span>
+          <span><strong>Sri Vengateshwara</strong><small>PURE GOLD, PURE TRUST</small></span>
         </Link>
         <div className="showcase-copy">
           <p className="eyebrow"><span /> YOUR GOLDEN JOURNEY</p>
           <h1>Begin Your<br /><em>Golden</em><br />Journey.</h1>
-          <p className="showcase-description">Create your Kanak Gold account and discover thoughtfully crafted jewellery made for the moments you will remember.</p>
+          <p className="showcase-description">Create your Sri Vengateshwara account and discover thoughtfully crafted jewellery made for the moments you will remember.</p>
           <div className="showcase-benefits">
             <div><span className="benefit-icon"><Gem /></span><p><strong>Curated Collections</strong><small>Jewellery made for your style</small></p></div>
             <div><span className="benefit-icon"><ShieldCheck /></span><p><strong>Trusted Craftsmanship</strong><small>BIS Hallmarked Gold</small></p></div>
@@ -77,7 +77,7 @@ export function Register() {
       <section className="login-panel register-panel">
         <Link to="/" className="back-home"><ArrowLeft size={18} /> Back to Home</Link>
         <div className="login-card register-card">
-          <div className="login-heading"><h2>Create Account</h2><p>Join the Kanak Gold family today</p></div>
+          <div className="login-heading"><h2>Create Account</h2><p>Join the Sri Vengateshwara family today</p></div>
           <form onSubmit={handleSubmit} className="login-form register-form">
             <div className="field-group"><span className="field-label">Full name</span><label className="input-shell"><UserRound size={20} /><input name="username" placeholder="Enter your full name" value={form.username} onChange={handleChange} required /></label></div>
             <div className="field-group"><span className="field-label">Email address</span><label className="input-shell"><Mail size={20} /><input name="email" type="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} required /></label></div>

@@ -1,6 +1,6 @@
 export default function Navbar() {
   return (
-    <div className="w-full bg-[#1b88f3] text-white py-2 px-6 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider font-sans z-[60] fixed top-0 h-10 shadow-sm leading-none">
+    <div className="w-full bg-primary text-white py-2 px-6 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider font-sans z-[60] fixed top-0 h-10 shadow-sm leading-none">
       {/* Left: Contact Info */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-1.5 hover:text-white/80 transition-colors cursor-pointer">
