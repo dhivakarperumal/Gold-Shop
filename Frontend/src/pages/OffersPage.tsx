@@ -138,30 +138,14 @@ function OffersPage() {
   return (
     <div className="min-h-screen bg-[#fffdf8] text-primary">
       <PageHeader
-        eyebrow="Special Offers"
-        title={<>Golden Deals<br className="hidden sm:block" /> For Precious Moments</>}
-        description={<>Exclusive offers on gold, diamond and bridal jewellery.<br className="hidden sm:block" /> Make your celebrations more special with our limited period offers.</>}
-        className="min-h-[175px] sm:min-h-[200px]"
-        titleClassName="text-3xl sm:text-4xl"
-        action={(
-          <Link to="/shop" className="inline-flex items-center gap-2 rounded-full bg-[#f1bf54] px-4 py-2 text-[10px] font-bold text-[#4b1715] transition hover:bg-[#ffdc89]">
-            Shop Offers <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        )}
-      >
-        <div className="grid grid-cols-3 divide-x divide-[#f4c35e]/30">
-          {[
-            { icon: Percent, title: 'Exclusive', detail: 'Discounts' },
-            { icon: Gift, title: 'Special', detail: 'Festive Offers' },
-            { icon: Gem, title: 'On Selected', detail: 'Collections' },
-          ].map(({ icon: Icon, title, detail }) => (
-            <div key={title} className="flex flex-col items-center gap-2 px-2 text-center sm:px-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#f4c35e] text-[#f4c35e] sm:h-11 sm:w-11"><Icon className="h-4 w-4 sm:h-5 sm:w-5" /></span>
-              <span className="font-serif text-[10px] font-bold text-white sm:text-xs">{title}<br />{detail}</span>
-            </div>
-          ))}
-        </div>
-      </PageHeader>
+        breadcrumb="Offers"
+        title="Offers"
+        subtitle="Exclusive Offers for Every Occasion"
+        description="Explore our latest offers and festive collections on gold, diamond and traditional jewellery, crafted to make your celebrations more special."
+        className="flex h-[300px] items-center"
+        contentClassName="py-4"
+        titleClassName="text-4xl sm:text-5xl lg:text-6xl"
+      />
 
       <main className="mx-auto max-w-[1700px] px-[6%] py-3 sm:px-[5%] lg:px-[3%]">
         <nav aria-label="Breadcrumb" className="mb-3 flex gap-2 text-[10px] text-gray-500">

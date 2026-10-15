@@ -245,13 +245,13 @@ function ShopPage() {
   return (
     <div className="min-h-screen bg-[#fffdf8] text-primary">
       <PageHeader
-        title="Shop Jewellery"
-        eyebrow="HANDCRAFTED FOR EVERY OCCASION"
+        title="Shop"
+        subtitle="Explore Our Exquisite Collections"
         breadcrumb="Shop"
-        description="Explore timeless gold, diamond, and everyday jewellery, thoughtfully crafted to make every celebration shine."
+        description="Discover a wide range of gold, diamond and traditional jewellery crafted with purity, elegance and timeless beauty."
         className="flex h-[300px] items-center"
         contentClassName="py-4"
-        titleClassName="text-2xl sm:text-3xl"
+        titleClassName="text-4xl sm:text-5xl lg:text-6xl"
       />
 
       <Container className="py-3">
