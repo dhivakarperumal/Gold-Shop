@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown, Menu, X } from 'lucide-react';
 import PageContainer from './PageContainer.jsx';
+import { useStoreCart } from '../../context/useStoreCart';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -10,13 +11,12 @@ export default function Header() {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { itemCount } = useStoreCart();
   const isHomeActive = location.pathname === '/' && !location.hash;
   const isAboutActive = location.pathname === '/about';
   const isShopActive = location.pathname === '/shop';
   const isOffersActive = location.pathname === '/offers';
   const isContactActive = location.pathname === '/contact';
-  const isTermsAndConditionsActive = location.pathname === '/terms-and-conditions';
-  const isPagesActive = [isContactActive, isTermsAndConditionsActive].some(Boolean);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -77,10 +77,10 @@ export default function Header() {
           <Heart className="w-5 h-5" />
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">0</span>
         </button>
-        <button aria-label="Shopping cart" className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
+        <Link to="/cart" aria-label={`Shopping cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`} className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
           <ShoppingCart className="w-5 h-5" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#5a1112] text-[9px] font-bold text-white">0</span>
-        </button>
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#5a1112] text-[9px] font-bold text-white">{itemCount}</span>
+        </Link>
 
         <div className="mx-1 hidden h-4 w-px bg-gray-200 sm:block"></div>
 

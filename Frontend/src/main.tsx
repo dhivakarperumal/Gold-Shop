@@ -39,6 +39,7 @@ import About from "./pages/About";
 import ShopPage from "./pages/ShopPage.tsx";
 import OffersPage from "./pages/OffersPage";
 import ContactPage from "./pages/ContactPage";
+import CartPage from "./pages/CartPage";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
       { path: "shop", element: <ShopPage /> },
       { path: "offers", element: <OffersPage /> },
       { path: "contact", element: <ContactPage /> },
+      { path: "cart", element: <CartPage /> },
       { path: "product/:id", element: <ProductDetails /> }
     ]
   },

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, ShoppingCart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
 import type { Product } from '../components/CommonComponents/ProductCard';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import { categories as storeCategories } from '../lib/categoryData';
+import type { CartProduct } from '../context/StoreCartContext';
+import { useStoreCart } from '../context/useStoreCart';
 
 type CatalogProduct = Product & {
   gender?: string;
@@ -91,6 +93,7 @@ function FilterGroup({
 }
 
 function ShopPage() {
+  const { addItem } = useStoreCart();
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -99,6 +102,7 @@ function ShopPage() {
   const [sort, setSort] = useState('latest');
   const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [cartMessage, setCartMessage] = useState('');
   const pageSize = 12;
 
   useEffect(() => {
@@ -355,6 +359,30 @@ function ShopPage() {
                           <Link to={`/product/${product.productId}`} className="flex-1 rounded bg-[#5a1112] px-2 py-1.5 text-center text-[10px] font-bold text-white transition hover:bg-[#3f0b0c]">
                             View Details
                           </Link>
+                          <button
+                            type="button"
+                            aria-label={`Add ${product.name} to cart`}
+                            onClick={() => {
+                              const cartProduct: CartProduct = {
+                                id: product.productId,
+                                name: product.name,
+                                category: product.category,
+                                purity: product.purity,
+                                weight: Number(product.weight) || 0,
+                                weightUnit: product.weightUnit || 'g',
+                                price: Number(product.price) || 0,
+                                offerPrice: Number(product.offerPrice) || 0,
+                                stock: Number(product.stock) || 0,
+                                image: image || imageAsset(1),
+                              };
+                              setCartMessage(addItem(cartProduct)
+                                ? `${product.name} added to your cart.`
+                                : `${product.name} is out of stock or at its available quantity limit.`);
+                            }}
+                            className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]"
+                          >
+                            <ShoppingCart className="h-3.5 w-3.5" />
+                          </button>
                           <button type="button" aria-label={`Add ${product.name} to wishlist`} className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]">
                             <Heart className="h-3.5 w-3.5" />
                           </button>
@@ -371,6 +399,8 @@ function ShopPage() {
                 <button type="button" onClick={clearFilters} className="mt-4 rounded-full bg-[#5a1112] px-4 py-2 text-xs font-bold text-white">Clear filters</button>
               </div>
             )}
+
+            {cartMessage && <p role="status" className="mt-3 text-xs font-semibold text-[#5a1112]">{cartMessage}</p>}
 
             {!loading && filteredProducts.length > pageSize && (
               <nav aria-label="Shop pages" className="mt-5 flex items-center justify-center gap-1">

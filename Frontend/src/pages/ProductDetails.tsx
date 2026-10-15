@@ -2,29 +2,35 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Heart, ShieldCheck, Clock, Award, ChevronRight, Star } from 'lucide-react';
 import api from '../api';
-import { ProductCard } from '../components/CommonComponents/ProductCard';
+import { ProductCard, type Product } from '../components/CommonComponents/ProductCard';
+import type { CartProduct } from '../context/StoreCartContext';
+import { useStoreCart } from '../context/useStoreCart';
+
+type ProductDetailsRecord = Product & { sku?: string };
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<any>(null);
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [product, setProduct] = useState<ProductDetailsRecord | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<ProductDetailsRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
+  const [cartMessage, setCartMessage] = useState('');
+  const { addItem } = useStoreCart();
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       setLoading(true);
       try {
         const [productRes, allProductsRes] = await Promise.all([
-          api.get(`/products/${id}`),
-          api.get('/products')
+          api.get<{ product: ProductDetailsRecord }>(`/products/${id}`),
+          api.get<{ products: ProductDetailsRecord[] }>('/products')
         ]);
         
         const currentProduct = productRes.data.product;
         setProduct(currentProduct);
 
         const allProducts = allProductsRes.data.products || [];
-        const related = allProducts.filter((p: any) => 
+        const related = allProducts.filter((p) =>
           p.status === 'Active' &&
           p.category === currentProduct.category && 
           p.productId !== currentProduct.productId
@@ -61,7 +67,7 @@ export function ProductDetails() {
     );
   }
 
-  const images = product.images && product.images.length > 0 ? product.images : [null];
+  const images: (string | null)[] = product.images.length > 0 ? product.images : [null];
   
   const getImageUrl = (imagePath: string | null) => {
     if (!imagePath) return `https://ui-avatars.com/api/?name=${encodeURIComponent(product.name)}&background=f3f4f6&color=9ca3af&size=500`;
@@ -71,6 +77,25 @@ export function ProductDetails() {
   };
 
   const discountAmount = product.price - (product.offerPrice || product.price);
+  const addProductToCart = () => {
+    const cartProduct: CartProduct = {
+      id: String(product.productId),
+      name: String(product.name),
+      category: String(product.category || ''),
+      purity: String(product.purity || ''),
+      weight: Number(product.weight) || 0,
+      weightUnit: String(product.weightUnit || 'g'),
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: getImageUrl(images[0]),
+    };
+    if (addItem(cartProduct)) {
+      setCartMessage(`${cartProduct.name} added to your cart.`);
+    } else {
+      setCartMessage('This item is currently out of stock or at its available quantity limit.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pt-8 pb-20 font-sans">
@@ -111,7 +136,7 @@ export function ProductDetails() {
               {/* Thumbnails */}
               {images.length > 1 && (
                 <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
-                  {images.map((img: string, idx: number) => (
+                  {images.map((img: string | null, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
@@ -162,13 +187,18 @@ export function ProductDetails() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <button className="flex-1 bg-[#1b88f3] text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#1569c7] transition-all shadow-lg shadow-blue-500/30">
+                <button
+                  type="button"
+                  onClick={addProductToCart}
+                  className="flex-1 bg-[#5a1112] text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#74180f] transition-all shadow-lg shadow-[#5a1112]/20"
+                >
                   <ShoppingCart className="w-5 h-5" /> Add to Cart
                 </button>
                 <button className="h-14 px-8 rounded-2xl font-bold flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-all">
                   <Heart className="w-5 h-5" /> Wishlist
                 </button>
               </div>
+              {cartMessage && <p role="status" className="-mt-7 mb-7 text-sm font-medium text-[#5a1112]">{cartMessage}</p>}
 
               {/* Key Features / Specs Grid */}
               <div className="grid grid-cols-2 gap-4 mb-10">

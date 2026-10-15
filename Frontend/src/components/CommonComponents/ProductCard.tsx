@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Heart, Star, Sparkles, Gem, Eye, ShoppingBag } from 'lucide-react';
+import type { CartProduct } from '../../context/StoreCartContext';
+import { useStoreCart } from '../../context/useStoreCart';
 
 export interface Product {
   id: number;
@@ -36,6 +38,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWishlist }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [cartMessage, setCartMessage] = useState('');
+  const { addItem } = useStoreCart();
   const isWished = wishlist.has(product.productId);
   const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
 
@@ -60,6 +64,26 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     if (toggleWishlist) toggleWishlist(product.productId);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const cartProduct: CartProduct = {
+      id: product.productId,
+      name: product.name,
+      category: product.category,
+      purity: product.purity,
+      weight: Number(product.weight) || 0,
+      weightUnit: product.weightUnit || 'g',
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: imgSrc || '',
+    };
+    setCartMessage(addItem(cartProduct)
+      ? `${product.name} added to your cart.`
+      : `${product.name} is out of stock or at its available quantity limit.`);
   };
 
   return (
@@ -122,7 +146,14 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
           <button onClick={(e) => e.preventDefault()} className="flex-1 bg-white/95 backdrop-blur-sm text-gray-800 text-xs font-bold py-2.5 rounded-xl hover:bg-[#1b88f3] hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg">
             <Eye className="w-3.5 h-3.5" /> Quick View
           </button>
-          <button onClick={(e) => e.preventDefault()} className="bg-[#1b88f3] text-white p-2.5 rounded-xl hover:bg-[#1569c7] transition-colors shadow-lg">
+          <button
+            type="button"
+            aria-label={`Add ${product.name} to cart`}
+            title={product.stock > 0 ? 'Add to cart' : 'Out of stock'}
+            disabled={product.stock <= 0}
+            onClick={handleAddToCart}
+            className="bg-[#5a1112] text-white p-2.5 rounded-xl hover:bg-[#74180f] transition-colors shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <ShoppingBag className="w-4 h-4" />
           </button>
         </div>
@@ -139,6 +170,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
       {/* Card Content */}
       <div className="p-4 space-y-2.5">
+        {cartMessage && <span role="status" className="sr-only">{cartMessage}</span>}
         {/* Category */}
         <p className="text-[10px] font-bold text-[#1b88f3] uppercase tracking-[0.15em]">
           {product.category} {product.subCategory ? `· ${product.subCategory}` : ''}

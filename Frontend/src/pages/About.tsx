@@ -35,8 +35,8 @@ function About() {
       <PageHeader
         breadcrumb="About Us"
         title="About Us"
-        subtitle="A Legacy of Trust and Timeless Beauty"
-        description="At Sri Vengateshwara, we bring beautifully crafted jewellery to every home. With decades of experience, we are committed to purity, quality and exceptional craftsmanship inspired by our rich Indian heritage."
+        subtitle="A Legacy of Trust"
+        description={<>Beautifully crafted jewellery inspired by Indian heritage.<br />Made for your special moments.</>}
         className="flex h-[300px] items-center"
         contentClassName="!py-1"
         titleClassName="text-3xl sm:text-4xl lg:text-5xl"
