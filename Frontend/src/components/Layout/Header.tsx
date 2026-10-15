@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Search, Plus, UserPlus, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -10,9 +10,29 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const currentPageTitle = (() => {
+    if (location.pathname === '/admin' || location.pathname === '/admin/') return 'Dashboard';
+    if (location.pathname === '/admin/loans' && location.search === '?mode=return') return 'Gold Return';
+    const pageTitles: Record<string, string> = {
+      '/admin/customers': 'Customers',
+      '/admin/loans': 'Loans',
+      '/admin/payments': 'Payments',
+      '/admin/dealers': 'Dealers',
+      '/admin/reports': 'Reports',
+      '/admin/products/all': 'All Products',
+      '/admin/products/add': 'Add Product',
+      '/admin/products/category': 'Categories',
+      '/admin/products/stock': 'Stock Details',
+      '/admin/marketing/banners': 'Banner Management',
+      '/admin/marketing/videos': 'Video Management',
+    };
+    return pageTitles[location.pathname]
+      || (location.pathname.startsWith('/admin/products/') ? 'Products' : 'Admin Panel');
+  })();
 
   const handleQuickAction = (path: string) => {
     setIsQuickActionsOpen(false);
@@ -26,13 +46,14 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 lg:px-6 shadow-sm z-10 shrink-0 relative">
-      <div className="flex items-center gap-3 w-full lg:w-auto">
+      <div className="flex min-w-0 items-center gap-3">
         <button 
           onClick={onMenuClick}
           className="lg:hidden p-2 -ml-2 rounded-md hover:bg-gray-100 text-gray-600 focus:outline-none"
         >
           <Menu className="w-6 h-6" />
         </button>
+        <h1 className="truncate text-base font-bold text-[#4b1715] sm:text-lg">{currentPageTitle}</h1>
       </div>
       
       {/* Center Search Bar & Quick Actions */}
