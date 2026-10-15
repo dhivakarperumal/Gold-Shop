@@ -171,6 +171,7 @@ async function initializeDatabase() {
         price DECIMAL(10,2),
         offer_price DECIMAL(10,2),
         discount DECIMAL(5,2),
+        rating DECIMAL(2,1) NOT NULL DEFAULT 0,
         stock INT DEFAULT 0,
         sku VARCHAR(100),
         gender VARCHAR(50),
@@ -195,6 +196,17 @@ async function initializeDatabase() {
       )
     `);
     console.log('Products table initialized');
+
+    const [productRatingColumns] = await connection.execute(
+      `SELECT COLUMN_NAME
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'rating'`
+    );
+    if (productRatingColumns.length === 0) {
+      await connection.execute(
+        'ALTER TABLE products ADD COLUMN rating DECIMAL(2,1) NOT NULL DEFAULT 0 AFTER discount'
+      );
+    }
 
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS cart_items (

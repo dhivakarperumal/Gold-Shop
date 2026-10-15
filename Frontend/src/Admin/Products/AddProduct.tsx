@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Save, Image as ImageIcon, X } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
+import type { Category } from '../../lib/categoryData';
 
 export function AddProduct() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(isEditMode);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -36,6 +37,7 @@ export function AddProduct() {
     price: 0,
     offerPrice: 0,
     discount: 0,
+    rating: 0,
     
     stock: 0,
     sku: '',
@@ -100,6 +102,7 @@ export function AddProduct() {
             price: product.price || 0,
             offerPrice: product.offerPrice || 0,
             discount: product.discount || 0,
+            rating: product.rating || 0,
             stock: product.stock || 0,
             sku: product.sku || '',
             gender: product.gender || 'Unisex',
@@ -237,6 +240,7 @@ export function AddProduct() {
       payload.append('price', String(formData.price));
       payload.append('offerPrice', String(formData.offerPrice));
       payload.append('discount', String(formData.discount));
+      payload.append('rating', String(formData.rating));
       payload.append('stock', String(formData.stock));
       payload.append('sku', formData.sku);
       payload.append('gender', formData.gender);
@@ -384,6 +388,11 @@ export function AddProduct() {
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Discount (%)</span>
               <input type="number" name="discount" value={formData.discount} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0" />
+            </label>
+            <label className="space-y-1">
+              <span className="text-sm font-medium text-gray-700">Product Rating (0–5)</span>
+              <input type="number" name="rating" value={formData.rating} onChange={handleChange} min="0" max="5" step="0.1" className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="0.0" />
+              <span className="text-xs text-gray-500">Optional rating, from 0 to 5 stars.</span>
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Making Charges (₹)</span>

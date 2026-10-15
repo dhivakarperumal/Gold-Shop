@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, ShoppingCart, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, LayoutGrid, List, ShoppingCart, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
 import type { Product } from '../components/CommonComponents/ProductCard';
@@ -105,6 +105,8 @@ function ShopPage() {
   const [maximumPrice, setMaximumPrice] = useState(0);
   const [sort, setSort] = useState('latest');
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [isDesktopFiltersOpen, setIsDesktopFiltersOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
   const pageSize = 12;
@@ -230,8 +232,27 @@ function ShopPage() {
     maximumFractionDigits: 0,
   }).format(value);
 
+  const handleAddToCart = async (product: CatalogProduct) => {
+    const image = productImage(product);
+    const cartProduct: CartProduct = {
+      id: product.productId,
+      name: product.name,
+      category: product.category,
+      purity: product.purity,
+      weight: Number(product.weight) || 0,
+      weightUnit: product.weightUnit || 'g',
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: image || imageAsset(1),
+    };
+    setCartMessage(await addItem(cartProduct)
+      ? `${product.name} added to your cart.`
+      : `${product.name} is out of stock or at its available quantity limit.`);
+  };
+
   const filtersPanel = (
-    <div className="rounded-xl border border-[#eadbc9] bg-white p-4">
+    <div className="w-full min-w-0 rounded-xl border border-[#eadbc9] bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-serif text-lg font-bold text-[#4b1715]">Filters</h2>
         <button type="button" onClick={clearFilters} className="text-xs font-semibold text-[#74180f] underline">Clear All</button>
@@ -338,14 +359,14 @@ function ShopPage() {
           ))}
         </div>
 
-        <div className="grid items-start gap-4 lg:grid-cols-[190px_minmax(0,1fr)]">
-          <aside className="hidden lg:block">{filtersPanel}</aside>
+        <div className={`grid items-start gap-4 ${isDesktopFiltersOpen ? 'lg:grid-cols-[250px_minmax(0,1fr)]' : 'lg:grid-cols-1'}`}>
+          {isDesktopFiltersOpen && <aside className="hidden min-w-0 lg:block">{filtersPanel}</aside>}
 
           {mobileFiltersOpen && (
-            <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/50 p-4 lg:hidden" onClick={(event) => {
+            <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/50 p-3 sm:p-4 lg:hidden" onClick={(event) => {
               if (event.target === event.currentTarget) setMobileFiltersOpen(false);
             }}>
-              <div className="mx-auto mt-12 max-w-sm">{filtersPanel}</div>
+              <div className="mx-auto mt-8 w-full max-w-md sm:mt-12">{filtersPanel}</div>
             </div>
           )}
 
@@ -358,6 +379,36 @@ function ShopPage() {
                 <button type="button" onClick={() => setMobileFiltersOpen(true)} className="inline-flex items-center gap-1 rounded-md border border-[#e8d6bf] bg-white px-2 py-1.5 font-semibold lg:hidden">
                   <Filter className="h-3.5 w-3.5" /> Filters
                 </button>
+                <button
+                  type="button"
+                  aria-label={isDesktopFiltersOpen ? 'Hide filters' : 'Show filters'}
+                  aria-expanded={isDesktopFiltersOpen}
+                  onClick={() => setIsDesktopFiltersOpen((open) => !open)}
+                  className={`hidden items-center gap-1 rounded-md border px-2 py-1.5 font-semibold transition-colors lg:inline-flex ${isDesktopFiltersOpen ? 'border-[#74180f] bg-[#fff5df] text-[#74180f]' : 'border-[#e8d6bf] bg-white text-gray-700 hover:bg-[#fff5df]'}`}
+                >
+                  <Filter className="h-3.5 w-3.5" />
+                  {isDesktopFiltersOpen ? 'Hide Filters' : 'Filters'}
+                </button>
+                <div className="inline-flex items-center rounded-md border border-[#e8d6bf] bg-white p-0.5" role="group" aria-label="Product view">
+                  <button
+                    type="button"
+                    aria-label="Card view"
+                    aria-pressed={viewMode === 'cards'}
+                    onClick={() => setViewMode('cards')}
+                    className={`rounded p-1.5 transition-colors ${viewMode === 'cards' ? 'bg-[#5a1112] text-white' : 'text-gray-600 hover:bg-[#fff5df]'}`}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Table view"
+                    aria-pressed={viewMode === 'table'}
+                    onClick={() => setViewMode('table')}
+                    className={`rounded p-1.5 transition-colors ${viewMode === 'table' ? 'bg-[#5a1112] text-white' : 'text-gray-600 hover:bg-[#fff5df]'}`}
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
                 <label htmlFor="shop-sort" className="hidden sm:inline">Sort by:</label>
                 <select
                   id="shop-sort"
@@ -376,85 +427,127 @@ function ShopPage() {
               </div>
             </div>
 
-            {loading ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-                {Array.from({ length: pageSize }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
-              </div>
-            ) : loadError ? (
-              <div role="alert" className="rounded-xl border border-red-100 bg-white py-12 text-center text-sm text-red-700">
-                We couldn’t load the jewellery catalogue. Please try again later.
-              </div>
-            ) : visibleProducts.length ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
-                {visibleProducts.map((product) => {
-                  const image = productImage(product);
-                  return (
-                    <article key={product.productId} className="group overflow-hidden rounded-lg border border-[#eee3d6] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
-                      <Link to={`/product/${product.productId}`} className="relative block aspect-square overflow-hidden bg-[#fff9f0]">
-                        {image ? (
-                          <img src={image} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                        ) : (
-                          <img src={imageAsset(1)} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
-                        )}
-                        {(product.newArrival || product.bestSeller || product.discount > 0) && (
-                          <span className="absolute left-2 top-2 rounded-sm bg-[#f0a616] px-1.5 py-1 text-[9px] font-bold text-[#35110c]">
-                            {product.discount > 0 ? `${product.discount}% OFF` : product.newArrival ? 'New' : 'Best Seller'}
-                          </span>
-                        )}
-                      </Link>
-                      <div className="p-2 sm:p-3">
-                        <p className="truncate text-[9px] text-gray-500">{product.purity}{product.weight ? ` · ${product.weight} ${product.weightUnit || 'g'}` : ''}</p>
-                        <Link to={`/product/${product.productId}`} className="mt-1 block min-h-8 text-xs font-semibold leading-4 text-[#301414] hover:text-[#74180f] sm:text-sm">
-                          {product.name}
+            <div className="mt-8">
+              {loading ? (
+                viewMode === 'cards' ? (
+                  <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${isDesktopFiltersOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-5'}`}>
+                    {Array.from({ length: pageSize }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {Array.from({ length: pageSize }, (_, index) => <div key={index} className="h-14 animate-pulse rounded-lg bg-brand-100" />)}
+                  </div>
+                )
+              ) : loadError ? (
+                <div role="alert" className="rounded-xl border border-red-100 bg-white py-12 text-center text-sm text-red-700">
+                  We couldn’t load the jewellery catalogue. Please try again later.
+                </div>
+              ) : visibleProducts.length ? (
+                viewMode === 'cards' ? (
+                  <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${isDesktopFiltersOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-5'}`}>
+                    {visibleProducts.map((product) => {
+                      const image = productImage(product);
+                      return (
+                        <article key={product.productId} className="group overflow-hidden rounded-lg border border-[#eee3d6] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+                        <Link to={`/product/${product.productId}`} className="relative block aspect-square overflow-hidden bg-[#fff9f0]">
+                          {image ? (
+                            <img src={image} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                          ) : (
+                            <img src={imageAsset(1)} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
+                          )}
+                          {(product.newArrival || product.bestSeller || product.discount > 0) && (
+                            <span className="absolute left-2 top-2 rounded-sm bg-[#f0a616] px-1.5 py-1 text-[9px] font-bold text-[#35110c]">
+                              {product.discount > 0 ? `${product.discount}% OFF` : product.newArrival ? 'New' : 'Best Seller'}
+                            </span>
+                          )}
                         </Link>
-                        <p className="mt-1 text-sm font-extrabold text-[#74180f]">{formatPrice(priceOf(product))}</p>
-                        {product.offerPrice > 0 && product.offerPrice < product.price && (
-                          <p className="text-[10px] text-gray-400 line-through">{formatPrice(product.price)}</p>
-                        )}
-                        <div className="mt-2 flex items-center gap-1">
-                          <Link to={`/product/${product.productId}`} className="flex-1 rounded bg-[#5a1112] px-2 py-1.5 text-center text-[10px] font-bold text-white transition hover:bg-[#3f0b0c]">
-                            View Details
+                        <div className="p-2 sm:p-3">
+                          <p className="truncate text-[9px] text-gray-500">{product.purity}{product.weight ? ` · ${product.weight} ${product.weightUnit || 'g'}` : ''}</p>
+                          <Link to={`/product/${product.productId}`} className="mt-1 block min-h-8 text-xs font-semibold leading-4 text-[#301414] hover:text-[#74180f] sm:text-sm">
+                            {product.name}
                           </Link>
-                          <button
-                            type="button"
-                            aria-label={`Add ${product.name} to cart`}
-                            onClick={async () => {
-                              const cartProduct: CartProduct = {
-                                id: product.productId,
-                                name: product.name,
-                                category: product.category,
-                                purity: product.purity,
-                                weight: Number(product.weight) || 0,
-                                weightUnit: product.weightUnit || 'g',
-                                price: Number(product.price) || 0,
-                                offerPrice: Number(product.offerPrice) || 0,
-                                stock: Number(product.stock) || 0,
-                                image: image || imageAsset(1),
-                              };
-                              setCartMessage(await addItem(cartProduct)
-                                ? `${product.name} added to your cart.`
-                                : `${product.name} is out of stock or at its available quantity limit.`);
-                            }}
-                            className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]"
-                          >
-                            <ShoppingCart className="h-3.5 w-3.5" />
-                          </button>
-                          <button type="button" aria-label={`Add ${product.name} to wishlist`} className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]">
-                            <Heart className="h-3.5 w-3.5" />
-                          </button>
+                          <p className="mt-1 text-sm font-extrabold text-[#74180f]">{formatPrice(priceOf(product))}</p>
+                          {product.offerPrice > 0 && product.offerPrice < product.price && (
+                            <p className="text-[10px] text-gray-400 line-through">{formatPrice(product.price)}</p>
+                          )}
+                          <div className="mt-2 flex items-center gap-1">
+                            <Link to={`/product/${product.productId}`} className="flex-1 rounded bg-[#5a1112] px-2 py-1.5 text-center text-[10px] font-bold text-white transition hover:bg-[#3f0b0c]">
+                              View Details
+                            </Link>
+                            <button
+                              type="button"
+                              aria-label={`Add ${product.name} to cart`}
+                              onClick={() => handleAddToCart(product)}
+                              className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]"
+                            >
+                              <ShoppingCart className="h-3.5 w-3.5" />
+                            </button>
+                            <button type="button" aria-label={`Add ${product.name} to wishlist`} className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]">
+                              <Heart className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-[#eadbc9] bg-white py-12 text-center">
-                <p className="font-serif text-lg font-bold text-[#4b1715]">No jewellery found</p>
-                <p className="mt-1 text-sm text-gray-500">Try adjusting your filters to find more designs.</p>
-                <button type="button" onClick={clearFilters} className="mt-4 rounded-full bg-[#5a1112] px-4 py-2 text-xs font-bold text-white">Clear filters</button>
-              </div>
-            )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-[#eadbc9] bg-white">
+                    <table className="w-full min-w-[760px] border-collapse text-left text-xs">
+                    <thead className="bg-[#fff5df] text-[#4b1715]">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 font-bold">Product</th>
+                        <th scope="col" className="px-4 py-3 font-bold">Category</th>
+                        <th scope="col" className="px-4 py-3 font-bold">Purity</th>
+                        <th scope="col" className="px-4 py-3 font-bold">Weight</th>
+                        <th scope="col" className="px-4 py-3 font-bold">Price</th>
+                        <th scope="col" className="px-4 py-3 font-bold">Stock</th>
+                        <th scope="col" className="px-4 py-3 text-right font-bold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#f0e6d9]">
+                      {visibleProducts.map((product) => (
+                        <tr key={product.productId} className="text-gray-700 hover:bg-[#fffdf8]">
+                          <td className="px-4 py-3">
+                            <Link to={`/product/${product.productId}`} className="flex min-w-52 items-center gap-3 font-semibold text-[#301414] hover:text-[#74180f]">
+                              <img src={productImage(product) || imageAsset(1)} alt="" className="h-12 w-12 rounded-md bg-[#fff9f0] object-cover" loading="lazy" />
+                              <span>{product.name}</span>
+                            </Link>
+                          </td>
+                          <td className="px-4 py-3">{product.category}{product.subCategory ? ` · ${product.subCategory}` : ''}</td>
+                          <td className="px-4 py-3">{product.purity || '—'}</td>
+                          <td className="px-4 py-3">{product.weight ? `${product.weight} ${product.weightUnit || 'g'}` : '—'}</td>
+                          <td className="px-4 py-3 font-bold text-[#74180f]">{formatPrice(priceOf(product))}</td>
+                          <td className="px-4 py-3">{Number(product.stock) > 0 ? product.stock : 'Out of stock'}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex justify-end gap-2">
+                              <Link to={`/product/${product.productId}`} className="rounded bg-[#5a1112] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#3f0b0c]">
+                                View
+                              </Link>
+                              <button
+                                type="button"
+                                aria-label={`Add ${product.name} to cart`}
+                                onClick={() => handleAddToCart(product)}
+                                className="rounded border border-[#eadbc9] p-2 text-[#74180f] hover:bg-[#fff4e5]"
+                              >
+                                <ShoppingCart className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    </table>
+                  </div>
+                )
+              ) : (
+                <div className="rounded-xl border border-[#eadbc9] bg-white py-12 text-center">
+                  <p className="font-serif text-lg font-bold text-[#4b1715]">No jewellery found</p>
+                  <p className="mt-1 text-sm text-gray-500">Try adjusting your filters to find more designs.</p>
+                  <button type="button" onClick={clearFilters} className="mt-4 rounded-full bg-[#5a1112] px-4 py-2 text-xs font-bold text-white">Clear filters</button>
+                </div>
+              )}
+            </div>
 
             {(cartError || cartMessage) && <p role={cartError ? 'alert' : 'status'} className="mt-3 text-xs font-semibold text-[#5a1112]">{cartError || cartMessage}</p>}
 

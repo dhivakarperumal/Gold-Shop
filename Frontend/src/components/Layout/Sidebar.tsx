@@ -48,7 +48,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar Content */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-gradient-to-b from-[#A87900] to-[#806000] flex flex-col
+        w-72 bg-gradient-to-b from-[#5a1112] to-[#3f0b0c] flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -86,8 +86,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   const isActive = location.pathname + location.search === item.path;
                   return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive 
-                      ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                      : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                      : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                   }`;
                 }}
               >
@@ -101,8 +101,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={() => setProductsOpen(!productsOpen)}
               className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 productSectionActive
-                  ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                  : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                  ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                  : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
               }`}
             >
               <span className="flex items-center gap-3">
@@ -119,8 +119,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                        : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -132,8 +132,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                        : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -145,8 +145,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                        : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -158,8 +158,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                        : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -177,8 +177,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   aria-expanded={marketingOpen}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     marketingSectionActive
-                      ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                      : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                      : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-3">
@@ -194,8 +194,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isActive
-                            ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                            : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                            ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                            : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                         }`
                       }
                     >
@@ -207,8 +207,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isActive
-                            ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
-                            : 'text-amber-50 hover:bg-white/10 hover:text-white'
+                            ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                            : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
                         }`
                       }
                     >
@@ -223,7 +223,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Bottom Logo */}
-        <div className="p-6 bg-[#705200] flex items-center justify-start">
+        <div className="p-6 bg-[#3f0b0c] flex items-center justify-start">
             <span className="font-bold text-2xl text-amber-50 tracking-tighter">KanakGold</span>
         </div>
       </aside>

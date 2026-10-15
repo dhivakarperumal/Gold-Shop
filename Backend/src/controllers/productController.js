@@ -1,18 +1,29 @@
 const path = require('path');
 const { pool } = require('../config/db');
 
+function parseProductRating(value) {
+  if (value === undefined || value === null || value === '') return 0;
+  const rating = Number(value);
+  return Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : null;
+}
+
 async function createProduct(req, res) {
   try {
     const {
       productId, name, category, subCategory, brand, purity, hallmark,
       certificate, weight, weightUnit, coinWeight, makingCharges,
-      wastagePercentage, price, offerPrice, discount, stock, sku, gender,
+      wastagePercentage, price, offerPrice, discount, rating, stock, sku, gender,
       occasion, color, material, size, lengthOptions, description, features,
       dimensions, shipping, returnPolicy, seo, status, featured, bestSeller, newArrival
     } = req.body;
 
     if (!productId || !name) {
       return res.status(400).json({ message: 'productId and name are required' });
+    }
+
+    const productRating = parseProductRating(rating);
+    if (productRating === null) {
+      return res.status(400).json({ message: 'rating must be a number between 0 and 5' });
     }
 
     // Process uploaded images
@@ -39,17 +50,17 @@ async function createProduct(req, res) {
         `INSERT INTO products
           (product_id, name, category, sub_category, brand, purity, hallmark,
            certificate, weight, weight_unit, coin_weight, making_charges,
-           wastage_percentage, price, offer_price, discount, stock, sku, gender,
+           wastage_percentage, price, offer_price, discount, rating, stock, sku, gender,
            occasion, color, material, size, length_options, description, features,
            dimensions, shipping, return_policy, seo, images, status, featured,
            best_seller, new_arrival)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           productId, name, category, subCategory, brand, purity,
           hallmark === 'true' || hallmark === true ? 1 : 0,
           certificate,
           weight || 0, weightUnit, coinWeight || null,
-          makingCharges || 0, wastagePercentage || 0, price || 0, offerPrice || 0, discount || 0,
+          makingCharges || 0, wastagePercentage || 0, price || 0, offerPrice || 0, discount || 0, productRating,
           stock || 0, sku, gender,
           occasion || '[]', color, material,
           size || '[]', lengthOptions || '[]',
@@ -106,6 +117,7 @@ async function getProducts(req, res) {
           price: row.price,
           offerPrice: row.offer_price,
           discount: row.discount,
+          rating: Number(row.rating) || 0,
           stock: row.stock,
           sku: row.sku,
           gender: row.gender,
@@ -194,6 +206,7 @@ async function getProductById(req, res) {
         price: row.price,
         offerPrice: row.offer_price,
         discount: row.discount,
+        rating: Number(row.rating) || 0,
         stock: row.stock,
         sku: row.sku,
         gender: row.gender,
@@ -233,10 +246,15 @@ async function updateProduct(req, res) {
     const {
       name, category, subCategory, brand, purity, hallmark,
       certificate, weight, weightUnit, coinWeight, makingCharges,
-      wastagePercentage, price, offerPrice, discount, stock, sku, gender,
+      wastagePercentage, price, offerPrice, discount, rating, stock, sku, gender,
       occasion, color, material, size, lengthOptions, description, features,
       dimensions, shipping, returnPolicy, seo, status, featured, bestSeller, newArrival
     } = req.body;
+
+    const productRating = parseProductRating(rating);
+    if (productRating === null) {
+      return res.status(400).json({ message: 'rating must be a number between 0 and 5' });
+    }
 
     // Process uploaded images
     let images = [];
@@ -262,7 +280,7 @@ async function updateProduct(req, res) {
         `UPDATE products SET
           name=?, category=?, sub_category=?, brand=?, purity=?, hallmark=?,
           certificate=?, weight=?, weight_unit=?, coin_weight=?, making_charges=?,
-          wastage_percentage=?, price=?, offer_price=?, discount=?, stock=?, sku=?, gender=?,
+          wastage_percentage=?, price=?, offer_price=?, discount=?, rating=?, stock=?, sku=?, gender=?,
           occasion=?, color=?, material=?, size=?, length_options=?, description=?, features=?,
           dimensions=?, shipping=?, return_policy=?, seo=?, images=?, status=?, featured=?,
           best_seller=?, new_arrival=?
@@ -272,7 +290,7 @@ async function updateProduct(req, res) {
           hallmark === 'true' || hallmark === true ? 1 : 0,
           certificate,
           weight || 0, weightUnit, coinWeight || null,
-          makingCharges || 0, wastagePercentage || 0, price || 0, offerPrice || 0, discount || 0,
+          makingCharges || 0, wastagePercentage || 0, price || 0, offerPrice || 0, discount || 0, productRating,
           stock || 0, sku, gender,
           occasion || '[]', color, material,
           size || '[]', lengthOptions || '[]',

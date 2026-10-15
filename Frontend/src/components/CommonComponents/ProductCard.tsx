@@ -18,6 +18,7 @@ export interface Product {
   price: number;
   offerPrice: number;
   discount: number;
+  rating?: number;
   stock: number;
   color: string;
   material: string;
@@ -180,6 +181,14 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
         <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1b88f3] transition-colors">
           {product.name}
         </h3>
+
+        {Number(product.rating) > 0 && (
+          <div className="flex items-center gap-1 text-xs" aria-label={`Rated ${product.rating} out of 5`}>
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+            <span className="font-semibold text-gray-700">{Number(product.rating).toFixed(1)}</span>
+            <span className="text-gray-400">/ 5</span>
+          </div>
+        )}
 
         {/* Weight & Material */}
         <div className="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
