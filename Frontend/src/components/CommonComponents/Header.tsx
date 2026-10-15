@@ -14,7 +14,9 @@ export default function Header() {
   const isAboutActive = location.pathname === '/about';
   const isShopActive = location.pathname === '/shop';
   const isOffersActive = location.pathname === '/offers';
-  const isPagesActive = ['/contact', '/terms-and-conditions'].includes(location.pathname);
+  const isContactActive = location.pathname === '/contact';
+  const isTermsAndConditionsActive = location.pathname === '/terms-and-conditions';
+  const isPagesActive = [isContactActive, isTermsAndConditionsActive].some(Boolean);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -39,7 +41,7 @@ export default function Header() {
         <Link to="/" aria-current={isHomeActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isHomeActive ? 'text-secondary-dark' : ''}`}>Home</Link>
         <Link to="/about" aria-current={isAboutActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isAboutActive ? 'text-secondary-dark' : ''}`}>About</Link>
         <Link to="/shop" aria-current={isShopActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isShopActive ? 'text-secondary-dark' : ''}`}>Shop</Link>
-        <Link to="/offers" aria-current={isOffersActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isOffersActive ? 'text-secondary-dark' : ''}`}>Offers</Link>
+        
 
         <div className="relative group">
           <button
@@ -62,31 +64,10 @@ export default function Header() {
             ))}
           </div>
         </div>
+        <Link to="/offers" aria-current={isOffersActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isOffersActive ? 'text-secondary-dark' : ''}`}>Offers</Link>
+        <Link to="/contact" aria-current={isContactActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isContactActive ? 'text-secondary-dark' : ''}`}>Contact Us</Link>
 
-        <div className="relative group">
-          <button
-            type="button"
-            aria-current={isPagesActive ? 'page' : undefined}
-            className={`flex items-center gap-1 hover:text-secondary-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-dark rounded ${isPagesActive ? 'text-secondary-dark' : ''}`}
-          >
-            Pages
-            <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
-          </button>
-          <div className="invisible absolute left-0 top-full z-[70] mt-3 w-56 translate-y-2 rounded-xl border border-gray-100 bg-white py-2 opacity-0 shadow-xl transition-all duration-200 pointer-events-none group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
-            <Link
-              to="/contact"
-              className="block px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-brand-50 hover:text-secondary-dark"
-            >
-              Contact us
-            </Link>
-            <Link
-              to="/terms-and-conditions"
-              className="block px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-brand-50 hover:text-secondary-dark"
-            >
-              Terms and Conditions
-            </Link>
-          </div>
-        </div>
+        
       </nav>
 
       {/* Right: Icons & Profile */}

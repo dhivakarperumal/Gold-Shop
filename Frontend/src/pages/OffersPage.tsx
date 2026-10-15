@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Gift, Gem, Percent, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowRight, Gift, Gem, ShieldCheck, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
 import type { Product } from '../components/CommonComponents/ProductCard';

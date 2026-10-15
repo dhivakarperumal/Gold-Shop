@@ -8,6 +8,7 @@ const quickLinks = [
   { label: 'About Us', to: '/about' },
   { label: 'Shop', to: '/shop' },
   { label: 'Offers', to: '/offers' },
+  { label: 'Contact Us', to: '/contact' },
 ];
 
 const socialLinks = [
@@ -53,7 +54,6 @@ export default function Footer() {
                 <Link to={to} className="transition-colors hover:text-[#f5c75e]">{label}</Link>
               </li>
             ))}
-            <li><a href="mailto:support@kanakgold.com" className="transition-colors hover:text-[#f5c75e]">Contact Us</a></li>
           </ul>
         </div>
 
