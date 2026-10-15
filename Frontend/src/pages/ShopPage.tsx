@@ -249,7 +249,6 @@ function ShopPage() {
         eyebrow="HANDCRAFTED FOR EVERY OCCASION"
         breadcrumb="Shop"
         description="Explore timeless gold, diamond, and everyday jewellery, thoughtfully crafted to make every celebration shine."
-        image={imageAsset(25)}
         className="flex h-[300px] items-center"
         contentClassName="py-4"
         titleClassName="text-2xl sm:text-3xl"

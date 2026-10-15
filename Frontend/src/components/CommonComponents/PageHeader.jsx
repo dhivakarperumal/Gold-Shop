@@ -2,10 +2,6 @@ import { Link } from "react-router-dom";
 
 const PageHeader = ({
   title,
-  background = "/images/pageheader.png",
-  image,
-  imageSize = "cover",
-  imagePosition = "center",
   eyebrow,
   subtitle,
   description,
@@ -16,14 +12,14 @@ const PageHeader = ({
   action,
   children,
 }) => {
-  if (image) {
+  if (breadcrumb || eyebrow || subtitle || description || action || children) {
     return (
       <section
         className={`relative overflow-hidden bg-cover bg-center text-white ${className}`}
         style={{
-          backgroundImage: `linear-gradient(90deg, rgba(48, 5, 7, .96), rgba(82, 9, 11, .78), rgba(56, 7, 8, .38)), url("${image}")`,
-          backgroundSize: imageSize.includes(",") ? imageSize : `cover, ${imageSize}`,
-          backgroundPosition: imagePosition.includes(",") ? imagePosition : `center, ${imagePosition}`,
+          backgroundImage: 'linear-gradient(90deg, rgba(48, 5, 7, .28), rgba(48, 5, 7, .08) 55%, transparent), url("/page-header-banner.png")',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           height: "300px",
           minHeight: "300px",
           maxHeight: "300px",
@@ -66,9 +62,9 @@ const PageHeader = ({
     <div
       className="relative flex h-[300px] w-full items-end justify-center overflow-hidden text-white"
       style={{
-        backgroundImage: `url(${background})`,
+        backgroundImage: 'url("/page-header-banner.png")',
         backgroundSize: "cover",
-        backgroundPosition: "bottom",
+        backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >

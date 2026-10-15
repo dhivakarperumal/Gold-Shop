@@ -2,10 +2,6 @@ import type { ReactElement, ReactNode } from 'react';
 
 interface PageHeaderProps {
   title: ReactNode;
-  background?: string;
-  image?: string;
-  imageSize?: string;
-  imagePosition?: string;
   eyebrow?: ReactNode;
   subtitle?: ReactNode;
   description?: ReactNode;

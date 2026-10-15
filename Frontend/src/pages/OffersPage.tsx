@@ -141,7 +141,6 @@ function OffersPage() {
         eyebrow="Special Offers"
         title={<>Golden Deals<br className="hidden sm:block" /> For Precious Moments</>}
         description={<>Exclusive offers on gold, diamond and bridal jewellery.<br className="hidden sm:block" /> Make your celebrations more special with our limited period offers.</>}
-        image={imageAsset(25)}
         className="min-h-[175px] sm:min-h-[200px]"
         titleClassName="text-3xl sm:text-4xl"
         action={(
