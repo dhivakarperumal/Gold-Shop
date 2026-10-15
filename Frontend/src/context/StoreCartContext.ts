@@ -23,7 +23,7 @@ export interface StoreCartContextValue {
   itemCount: number;
   subtotal: number;
   savings: number;
-  addItem: (product: CartProduct) => boolean;
+  addItem: (product: CartProduct, quantity?: number) => boolean;
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
 }

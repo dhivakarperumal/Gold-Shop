@@ -6,6 +6,7 @@ interface PageHeaderProps {
   subtitle?: ReactNode;
   description?: ReactNode;
   breadcrumb?: string;
+  breadcrumbTrail?: ReactNode;
   className?: string;
   contentClassName?: string;
   titleClassName?: string;

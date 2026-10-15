@@ -54,18 +54,18 @@ export function StoreCartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       savings,
-      addItem: (product) => {
-        if (product.stock <= 0) return false;
+      addItem: (product, quantity = 1) => {
+        if (!Number.isInteger(quantity) || quantity < 1 || product.stock < quantity) return false;
         const existing = items.find((line) => line.product.id === product.id);
-        if (existing && existing.quantity >= product.stock) return false;
+        if (existing && existing.quantity + quantity > product.stock) return false;
         setItems((current) => {
           const currentLine = current.find((line) => line.product.id === product.id);
           if (currentLine) {
             return current.map((line) => line.product.id === product.id
-              ? { ...line, product, quantity: line.quantity + 1 }
+              ? { ...line, product, quantity: line.quantity + quantity }
               : line);
           }
-          return [...current, { product, quantity: 1 }];
+          return [...current, { product, quantity }];
         });
         return true;
       },

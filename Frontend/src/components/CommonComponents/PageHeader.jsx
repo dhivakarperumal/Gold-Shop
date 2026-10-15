@@ -6,13 +6,14 @@ const PageHeader = ({
   subtitle,
   description,
   breadcrumb,
+  breadcrumbTrail,
   className = "",
   contentClassName = "",
   titleClassName = "",
   action,
   children,
 }) => {
-  if (breadcrumb || eyebrow || subtitle || description || action || children) {
+  if (breadcrumb || breadcrumbTrail || eyebrow || subtitle || description || action || children) {
     return (
       <section
         className={`relative overflow-hidden bg-cover bg-center text-white ${className}`}
@@ -27,13 +28,17 @@ const PageHeader = ({
       >
         <div className={`mx-auto grid w-full max-w-[1700px] items-center gap-6 px-[6%] py-5 sm:px-[5%] lg:px-[3%] ${children ? "sm:grid-cols-[1.3fr_1fr]" : "grid-cols-1"} ${contentClassName}`}>
           <div>
-            {breadcrumb && (
+            {breadcrumbTrail ? (
+              <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/80 sm:text-sm">
+                {breadcrumbTrail}
+              </nav>
+            ) : breadcrumb ? (
               <nav aria-label="Breadcrumb" className="mb-3 flex items-center gap-2 text-xs text-white/80 sm:text-sm">
                 <Link to="/" className="text-[#f1bf54] transition-colors hover:text-white">Home</Link>
                 <span aria-hidden="true">›</span>
                 <span aria-current="page">{breadcrumb}</span>
               </nav>
-            )}
+            ) : null}
             {eyebrow && <p className="text-[9px] font-bold uppercase tracking-[0.35em] text-[#f4c35e]">{eyebrow}</p>}
             <h1 className={`mt-1 max-w-2xl font-serif font-bold leading-tight text-[#f8dfa0] ${titleClassName || "text-3xl sm:text-4xl lg:text-5xl"}`}>
               {title}
