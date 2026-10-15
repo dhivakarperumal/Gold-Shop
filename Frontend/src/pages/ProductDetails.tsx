@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, Heart, ShieldCheck, Clock, Award, ChevronRight, Star } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, Heart, ShieldCheck, Clock, Award, Star, ArrowRight } from 'lucide-react';
 import api from '../api';
 import { ProductCard, type Product } from '../components/CommonComponents/ProductCard';
+import PageContainer from '../components/CommonComponents/PageContainer.jsx';
+import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import type { CartProduct } from '../context/StoreCartContext';
 import { useStoreCart } from '../context/useStoreCart';
 
@@ -10,6 +12,7 @@ type ProductDetailsRecord = Product & { sku?: string };
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetailsRecord | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ProductDetailsRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,56 +95,64 @@ export function ProductDetails() {
     };
     if (addItem(cartProduct)) {
       setCartMessage(`${cartProduct.name} added to your cart.`);
+      return true;
     } else {
       setCartMessage('This item is currently out of stock or at its available quantity limit.');
+      return false;
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (addProductToCart()) {
+      navigate('/cart');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-8 pb-20 font-sans">
-      <div className="max-w-7xl mx-auto px-6">
-        
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-8">
-          <Link to="/" className="hover:text-[#1b88f3]">Home</Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link to="/products" className="hover:text-[#1b88f3]">{product.category}</Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-gray-900 truncate">{product.name}</span>
-        </div>
+    <div className="min-h-screen bg-[#fffdf8] pb-12 font-sans">
+      <PageHeader
+        breadcrumb={product.category}
+        eyebrow={product.brand}
+        title={product.name}
+        description={`${product.purity || 'Fine'} jewellery${product.weight ? ` · ${product.weight} ${product.weightUnit}` : ''} · Explore the details of this design.`}
+        className="flex h-[300px] items-center"
+        contentClassName="py-4"
+        titleClassName="text-3xl sm:text-4xl lg:text-5xl"
+      />
 
-        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+      <PageContainer className="py-6 sm:py-8">
+        <div className="overflow-hidden rounded-2xl border border-[#f0e5d5] bg-white shadow-[0_12px_40px_rgba(73,24,18,0.06)] sm:rounded-[2rem]">
           <div className="grid lg:grid-cols-2">
             
             {/* Left: Images */}
-            <div className="p-8 lg:p-12 lg:border-r border-gray-100 flex flex-col gap-6">
-              <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
+            <div className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:border-r lg:border-[#f0e5d5] lg:p-10">
+              <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-[#fffaf2]">
                 {product.discount > 0 && (
-                  <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10">
+                  <div className="absolute left-4 top-4 z-10 rounded-full bg-[#74180f] px-3 py-1 text-xs font-bold text-white">
                     {product.discount}% OFF
                   </div>
                 )}
                 {product.bestSeller && (
-                  <div className="absolute top-4 right-4 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10 flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-current" /> Best Seller
+                  <div className="absolute right-4 top-4 z-10 flex items-center gap-1 rounded-full bg-[#f4c35e] px-3 py-1 text-xs font-bold text-[#4b1715]">
+                    <Star className="h-3 w-3 fill-current" /> Best Seller
                   </div>
                 )}
                 <img 
                   src={getImageUrl(images[activeImage])} 
                   alt={product.name} 
-                  className="w-full h-full object-cover mix-blend-multiply"
+                  className="h-full w-full object-contain mix-blend-multiply"
                 />
               </div>
 
               {/* Thumbnails */}
               {images.length > 1 && (
-                <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                <div className="flex gap-3 overflow-x-auto pb-2">
                   {images.map((img: string | null, idx: number) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(idx)}
                       className={`w-20 h-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                        activeImage === idx ? 'border-[#1b88f3] shadow-md' : 'border-transparent hover:border-gray-200 bg-gray-50'
+                        activeImage === idx ? 'border-[#b98531] shadow-md' : 'border-[#f0e5d5] hover:border-[#d6ad62] bg-[#fffaf2]'
                       }`}
                     >
                       <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
@@ -152,15 +163,15 @@ export function ProductDetails() {
             </div>
 
             {/* Right: Details */}
-            <div className="p-8 lg:p-12">
-              <p className="text-sm font-bold text-[#1b88f3] uppercase tracking-wider mb-2">{product.brand}</p>
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-4">
+            <div className="p-5 sm:p-7 lg:p-10">
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#ad7929]">{product.category}{product.subCategory ? ` · ${product.subCategory}` : ''}</p>
+              <h2 className="mb-4 font-serif text-2xl font-bold leading-tight tracking-tight text-[#4b1715] sm:text-3xl lg:text-4xl">
                 {product.name}
-              </h1>
+              </h2>
               
               <div className="flex items-center gap-4 mb-8 text-sm">
-                <span className="flex items-center gap-1 text-gray-500 font-medium">
-                  <span className="text-amber-500 flex">
+                <span className="flex items-center gap-1 font-medium text-gray-500">
+                  <span className="flex text-[#c18b2c]">
                     <Star className="w-4 h-4 fill-current" />
                     <Star className="w-4 h-4 fill-current" />
                     <Star className="w-4 h-4 fill-current" />
@@ -170,31 +181,40 @@ export function ProductDetails() {
                   (4.0)
                 </span>
                 <span className="text-gray-300">|</span>
-                <span className="text-gray-500 font-medium">SKU: {product.sku}</span>
+                <span className="font-medium text-gray-500">SKU: {product.sku || product.productId}</span>
               </div>
 
               <div className="flex items-end gap-4 mb-6">
-                <div className="text-4xl font-black text-gray-900 tracking-tight">
+                <div className="text-3xl font-extrabold tracking-tight text-[#74180f] sm:text-4xl">
                   ₹{product.offerPrice ? product.offerPrice.toLocaleString() : product.price?.toLocaleString()}
                 </div>
                 {product.offerPrice && product.offerPrice < product.price && (
                   <div className="flex flex-col mb-1">
                     <span className="text-lg text-gray-400 line-through font-bold">₹{product.price.toLocaleString()}</span>
-                    <span className="text-sm font-bold text-red-500">Save ₹{discountAmount.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-emerald-700">Save ₹{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="mb-10 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={addProductToCart}
-                  className="flex-1 bg-[#5a1112] text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#74180f] transition-all shadow-lg shadow-[#5a1112]/20"
+                  disabled={product.stock <= 0}
+                  className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#5a1112] font-bold text-white shadow-lg shadow-[#5a1112]/20 transition-all hover:bg-[#74180f] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShoppingCart className="w-5 h-5" /> Add to Cart
                 </button>
-                <button className="h-14 px-8 rounded-2xl font-bold flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-all">
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  disabled={product.stock <= 0}
+                  className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#b98531] px-6 font-bold text-white transition-all hover:bg-[#9c6a27] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Buy Now <ArrowRight className="h-5 w-5" />
+                </button>
+                <button type="button" className="flex h-14 items-center justify-center gap-2 rounded-2xl border-2 border-[#eadfd2] px-6 font-bold text-[#5a1112] transition-all hover:border-[#b98531] hover:bg-[#fffaf2]">
                   <Heart className="w-5 h-5" /> Wishlist
                 </button>
               </div>
@@ -202,8 +222,8 @@ export function ProductDetails() {
 
               {/* Key Features / Specs Grid */}
               <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-amber-500 shadow-sm shrink-0">
+                <div className="flex items-center gap-3 rounded-2xl border border-[#f0e5d5] bg-[#fffaf2] p-3 sm:p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#b98531] shadow-sm">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
@@ -211,8 +231,8 @@ export function ProductDetails() {
                     <p className="text-sm font-bold text-gray-900">{product.purity || 'N/A'}</p>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#1b88f3] shadow-sm shrink-0">
+                <div className="flex items-center gap-3 rounded-2xl border border-[#f0e5d5] bg-[#fffaf2] p-3 sm:p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#b98531] shadow-sm">
                     <Award className="w-5 h-5" />
                   </div>
                   <div>
@@ -220,8 +240,8 @@ export function ProductDetails() {
                     <p className="text-sm font-bold text-gray-900">{product.weight} {product.weightUnit}</p>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-500 shadow-sm shrink-0">
+                <div className="flex items-center gap-3 rounded-2xl border border-[#f0e5d5] bg-[#fffaf2] p-3 sm:p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
@@ -229,8 +249,8 @@ export function ProductDetails() {
                     <p className="text-sm font-bold text-gray-900">{product.hallmark ? 'BIS Hallmarked' : 'No'}</p>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-purple-500 shadow-sm shrink-0">
+                <div className="flex items-center gap-3 rounded-2xl border border-[#f0e5d5] bg-[#fffaf2] p-3 sm:p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8b5b80] shadow-sm">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
@@ -245,8 +265,8 @@ export function ProductDetails() {
               {/* Description */}
               {product.description && (
                 <div>
-                  <h3 className="text-lg font-black text-gray-900 tracking-tight mb-3">Product Description</h3>
-                  <p className="text-gray-500 leading-relaxed text-sm font-medium">
+                  <h3 className="mb-3 font-serif text-lg font-bold tracking-tight text-[#4b1715]">Product Description</h3>
+                  <p className="text-sm font-medium leading-relaxed text-gray-600">
                     {product.description}
                   </p>
                 </div>
@@ -258,22 +278,22 @@ export function ProductDetails() {
 
         {/* Related Products Section */}
         {relatedProducts.length > 0 && (
-          <div className="mt-20">
-            <div className="flex items-center justify-between mb-8">
+          <section className="mt-10 sm:mt-14">
+            <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold text-[#1b88f3] uppercase tracking-[0.2em] mb-1">More to Explore</p>
-                <h2 className="text-3xl font-black text-gray-900">Related Products</h2>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#ad7929]">More to Explore</p>
+                <h2 className="font-serif text-2xl font-bold text-[#5a1112] sm:text-3xl">Related Products</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {relatedProducts.map((p, i) => (
                 <ProductCard key={p.productId} product={p} index={i} />
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-      </div>
+      </PageContainer>
     </div>
   );
 }

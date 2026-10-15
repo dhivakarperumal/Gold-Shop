@@ -139,8 +139,9 @@ export function AddProduct() {
         setIsFetching(false);
       });
     } else {
-      // Auto-generate product ID (mock logic)
-      setFormData(prev => ({ ...prev, productId: `GLD${Date.now().toString().slice(-4)}` }));
+      const productId = `GLD${Date.now().toString().slice(-4)}`;
+      const sku = `RGJ-${crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()}`;
+      setFormData(prev => ({ ...prev, productId, sku }));
     }
   }, [id, isEditMode]);
 
@@ -329,8 +330,8 @@ export function AddProduct() {
               <input required name="name" value={formData.name} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. 22K Gold Necklace" />
             </label>
             <label className="space-y-1">
-              <span className="text-sm font-medium text-gray-700">SKU</span>
-              <input required name="sku" value={formData.sku} onChange={handleChange} className="w-full rounded-xl border-gray-200 bg-gray-50 p-3" placeholder="e.g. RGJ-NK-001" />
+              <span className="text-sm font-medium text-gray-700">SKU (Auto-generated)</span>
+              <input required name="sku" value={formData.sku} readOnly className="w-full cursor-not-allowed rounded-xl border-gray-200 bg-gray-100 p-3 text-gray-600" placeholder="Generated automatically" />
             </label>
             <label className="space-y-1">
               <span className="text-sm font-medium text-gray-700">Category</span>
