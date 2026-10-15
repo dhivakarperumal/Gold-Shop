@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 
 const image = (number: number) => `/Gold Shop Images/shopping (${number}).webp`;
 
@@ -31,22 +32,30 @@ function SectionLabel({ children }: { children: string }) {
 function About() {
   return (
     <div className="overflow-hidden bg-[#fffdf8] text-primary">
-      <section
-        className="relative flex min-h-[260px] items-center bg-cover bg-center sm:min-h-[320px]"
-        style={{ backgroundImage: `linear-gradient(90deg, rgba(54, 9, 11, .94), rgba(73, 13, 13, .68), rgba(45, 10, 8, .12)), url("${image(10)}")` }}
-      >
-        <Container className="relative py-14 sm:py-20">
-          <div className="max-w-2xl text-white">
-            <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-2 text-sm text-white/80">
-              <Link to="/" className="text-accent hover:text-white">Home</Link>
-              <span aria-hidden="true">›</span>
-              <span aria-current="page">About Us</span>
-            </nav>
-            <h1 className="font-serif text-4xl font-bold sm:text-5xl lg:text-6xl">About Us</h1>
-            <div className="mt-5 h-px w-36 bg-accent" />
+      <PageHeader
+        breadcrumb="About Us"
+        title="About Us"
+        subtitle="A Legacy of Trust and Timeless Beauty"
+        description="At Sri Vengateshwara, we bring beautifully crafted jewellery to every home. With decades of experience, we are committed to purity, quality and exceptional craftsmanship inspired by our rich Indian heritage."
+        image={image(10)}
+        imageSize="cover, 58% auto"
+        imagePosition="center, right center"
+        className="flex h-[300px] items-center"
+        contentClassName="!py-1"
+        titleClassName="text-3xl sm:text-4xl lg:text-5xl"
+        action={(
+          <div className="grid max-w-[450px] grid-cols-3 divide-x divide-[#f4c35e]/35 border-t border-[#f4c35e]/25 pt-2">
+            {values.slice(0, 3).map(({ icon: Icon, title }) => (
+              <div key={title} className="flex flex-col items-center gap-1 px-2 text-center">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#f4c35e] text-[#f4c35e] sm:h-9 sm:w-9">
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                </span>
+                <span className="font-serif text-[10px] font-semibold leading-tight text-white sm:text-xs">{title}</span>
+              </div>
+            ))}
           </div>
-        </Container>
-      </section>
+        )}
+      />
 
       <section className="py-10 sm:py-14">
         <Container>

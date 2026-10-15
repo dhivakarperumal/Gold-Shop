@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown, Menu, X } from 'lucide-react';
 import PageContainer from './PageContainer.jsx';
 
 export default function Header() {
@@ -9,10 +9,14 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isHomeActive = location.pathname === '/' && !location.hash;
   const isAboutActive = location.pathname === '/about';
-  const isShopActive = location.pathname === '/' && location.hash === '#products';
+  const isShopActive = location.pathname === '/shop';
+  const isOffersActive = location.pathname === '/offers';
   const isPagesActive = ['/contact', '/terms-and-conditions'].includes(location.pathname);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const handleLogout = async () => {
     await logout();
@@ -21,20 +25,21 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-10 z-50 h-16 w-full border-b border-gray-100 bg-white/80 font-sans backdrop-blur-md">
-      <PageContainer className="flex h-full items-center justify-between">
+    <header className="fixed top-10 z-50 w-full border-b border-gray-100 bg-white/95 font-sans shadow-sm backdrop-blur-md">
+      <div className="relative h-16">
+      <PageContainer className="flex h-full items-center justify-between gap-2">
       {/* Left: Logo */}
-      <Link to="/" className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-accent rounded flex items-center justify-center text-white font-bold">S</div>
-        <span className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Sri Vengateshwara</span>
+      <Link to="/" onClick={closeMobileMenu} className="flex min-w-0 shrink items-center gap-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-accent font-bold text-white">S</div>
+        <span className="hidden truncate text-base font-bold tracking-tight text-gray-900 sm:block lg:text-xl">Sri Vengateshwara</span>
       </Link>
 
       {/* Center: Nav Links */}
-      <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-600">
+      <nav aria-label="Main navigation" className="hidden items-center gap-4 whitespace-nowrap text-xs font-bold text-gray-600 lg:flex xl:gap-6 xl:text-sm">
         <Link to="/" aria-current={isHomeActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isHomeActive ? 'text-secondary-dark' : ''}`}>Home</Link>
         <Link to="/about" aria-current={isAboutActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isAboutActive ? 'text-secondary-dark' : ''}`}>About</Link>
-        <Link to="/#products" aria-current={isShopActive ? 'location' : undefined} className={`transition-colors hover:text-secondary-dark ${isShopActive ? 'text-secondary-dark' : ''}`}>Shop</Link>
-        <Link to="/#products" className="hover:text-secondary-dark transition-colors">Offers</Link>
+        <Link to="/shop" aria-current={isShopActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isShopActive ? 'text-secondary-dark' : ''}`}>Shop</Link>
+        <Link to="/offers" aria-current={isOffersActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isOffersActive ? 'text-secondary-dark' : ''}`}>Offers</Link>
 
         <div className="relative group">
           <button
@@ -49,7 +54,7 @@ export default function Header() {
             {['Gold Rings', 'Gold Chains', 'Gold Necklaces', 'Gold Earrings'].map((category) => (
               <Link
                 key={category}
-                to="/#products"
+                to="/shop"
                 className="block px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-brand-50 hover:text-secondary-dark"
               >
                 {category}
@@ -85,18 +90,18 @@ export default function Header() {
       </nav>
 
       {/* Right: Icons & Profile */}
-      <div className="flex items-center gap-5">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* Cart & Fav Icons */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary">
+        <button aria-label="Wishlist" className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
           <Heart className="w-5 h-5" />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">0</span>
         </button>
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary">
+        <button aria-label="Shopping cart" className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
           <ShoppingCart className="w-5 h-5" />
-          <span className="absolute -top-2 -right-2 bg-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#5a1112] text-[9px] font-bold text-white">0</span>
         </button>
 
-        <div className="h-4 w-[1px] bg-gray-200 hidden sm:block mx-1"></div>
+        <div className="mx-1 hidden h-4 w-px bg-gray-200 sm:block"></div>
 
         {/* User Account / Login */}
         {user ? (
@@ -161,14 +166,48 @@ export default function Header() {
         ) : (
           <Link 
             to="/login"
-            className="flex items-center gap-2 bg-[#5a1112] text-white px-5 py-2 rounded-lg font-bold hover:bg-[#3f0b0c] transition-all shadow-md text-sm"
+            className="hidden items-center gap-2 rounded-lg bg-[#5a1112] px-3 py-2 text-sm font-bold text-white shadow-md transition-all hover:bg-[#3f0b0c] sm:flex sm:px-4"
           >
             <User className="w-4 h-4" />
             Login
           </Link>
         )}
+
+        <button
+          type="button"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-primary transition hover:bg-brand-50 lg:hidden"
+        >
+          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
       </PageContainer>
+      {isMobileMenuOpen && (
+        <nav id="mobile-navigation" aria-label="Mobile navigation" className="absolute inset-x-0 top-full max-h-[calc(100vh-104px)] overflow-y-auto border-t border-gray-100 bg-white px-5 py-3 shadow-xl lg:hidden">
+          <div className="mx-auto flex max-w-[1700px] flex-col">
+            <Link to="/" onClick={closeMobileMenu} aria-current={isHomeActive ? 'page' : undefined} className={`rounded-lg px-3 py-3 text-sm font-semibold hover:bg-brand-50 ${isHomeActive ? 'text-secondary-dark' : 'text-gray-700'}`}>Home</Link>
+            <Link to="/about" onClick={closeMobileMenu} aria-current={isAboutActive ? 'page' : undefined} className={`rounded-lg px-3 py-3 text-sm font-semibold hover:bg-brand-50 ${isAboutActive ? 'text-secondary-dark' : 'text-gray-700'}`}>About</Link>
+            <Link to="/shop" onClick={closeMobileMenu} aria-current={isShopActive ? 'page' : undefined} className={`rounded-lg px-3 py-3 text-sm font-semibold hover:bg-brand-50 ${isShopActive ? 'text-secondary-dark' : 'text-gray-700'}`}>Shop</Link>
+            <Link to="/offers" onClick={closeMobileMenu} aria-current={isOffersActive ? 'page' : undefined} className={`rounded-lg px-3 py-3 text-sm font-semibold hover:bg-brand-50 ${isOffersActive ? 'text-secondary-dark' : 'text-gray-700'}`}>Offers</Link>
+            <div className="border-t border-gray-100 py-2">
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Categories</p>
+              {['Gold Rings', 'Gold Chains', 'Gold Necklaces', 'Gold Earrings'].map((category) => (
+                <Link key={category} to="/shop" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">{category}</Link>
+              ))}
+            </div>
+            <div className="border-t border-gray-100 py-2">
+              <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Pages</p>
+              <Link to="/contact" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">Contact us</Link>
+              <Link to="/terms-and-conditions" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">Terms and Conditions</Link>
+            </div>
+            {!user && <Link to="/login" onClick={closeMobileMenu} className="mt-2 rounded-lg bg-[#5a1112] px-3 py-3 text-center text-sm font-bold text-white hover:bg-[#3f0b0c]">Login</Link>}
+          </div>
+        </nav>
+      )}
+      </div>
     </header>
   );
 }

@@ -6,8 +6,8 @@ import PageContainer from './PageContainer.jsx';
 const quickLinks = [
   { label: 'Home', to: '/' },
   { label: 'About Us', to: '/about' },
-  { label: 'Shop', to: '/#products' },
-  { label: 'Offers', to: '/#products' },
+  { label: 'Shop', to: '/shop' },
+  { label: 'Offers', to: '/offers' },
 ];
 
 const socialLinks = [
@@ -62,7 +62,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm text-[#ead7b5]">
             {categories.slice(0, 6).map(({ categoryName }) => (
               <li key={categoryName}>
-                <Link to="/#products" className="transition-colors hover:text-[#f5c75e]">{categoryName}</Link>
+                <Link to="/shop" className="transition-colors hover:text-[#f5c75e]">{categoryName}</Link>
               </li>
             ))}
           </ul>

@@ -36,6 +36,8 @@ import { PrivateRoute } from "./context/PrivateRoute";
 import BannerManagement from "./Admin/Marketing/BannerManagement.jsx";
 import VideoManagement from "./Admin/Marketing/VideoManagement.jsx";
 import About from "./pages/About";
+import ShopPage from "./pages/ShopPage.tsx";
+import OffersPage from "./pages/OffersPage";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -45,6 +47,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "about", element: <About /> },
+      { path: "shop", element: <ShopPage /> },
+      { path: "offers", element: <OffersPage /> },
       { path: "product/:id", element: <ProductDetails /> }
     ]
   },

@@ -41,7 +41,7 @@ function SectionHeading({ eyebrow, title, description }) {
   );
 }
 
-export function Home() {
+function HomePage() {
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -420,4 +420,5 @@ export function Home() {
   );
 }
 
-export default Home;
+export const Home = HomePage;
+export default HomePage;
