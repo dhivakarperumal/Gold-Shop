@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video, ClipboardList, Truck, Ban } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -16,6 +16,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   );
   const [marketingOpen, setMarketingOpen] = useState(
     location.pathname.startsWith('/admin/marketing')
+  );
+  const [ordersOpen, setOrdersOpen] = useState(
+    location.pathname.startsWith('/admin/orders')
   );
 
   const navItems = [
@@ -55,8 +58,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Company Switcher Box */}
         <div className="relative flex items-center justify-between border-b border-white/15 p-4 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#f3c64e]">
-              <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" className="h-8 w-8">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center text-[#f3c64e]">
+              <svg aria-hidden="true" viewBox="0 0 32 32" fill="none" className="h-11 w-11">
                 <path d="M16 3.5c-3.7 4.1-4.4 8.1 0 12.4 4.4-4.3 3.7-8.3 0-12.4Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
                 <path d="M13.7 15.2C9.8 8.8 6.9 8.4 5.4 9.3c-.3 4.9 2.8 8.1 8.6 9.1m4.3-3.2c3.9-6.4 6.8-6.8 8.3-5.9.3 4.9-2.8 8.1-8.6 9.1M8.1 15.2c.5 5.4 3.3 8.2 7.9 9.2 4.6-1 7.4-3.8 7.9-9.2M4 20.6c3.7 4.2 7.7 6 12 6s8.3-1.8 12-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M16 24.5v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -170,6 +173,73 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 >
                   <Archive className="w-4 h-4" />
                   Stock Details
+                </NavLink>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setOrdersOpen((open) => !open)}
+              aria-expanded={ordersOpen}
+              className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                location.pathname.startsWith('/admin/orders')
+                  ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                  : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <ClipboardList className="w-5 h-5" />
+                Orders
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${ordersOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {ordersOpen && (
+              <div className="space-y-1 pl-8">
+                <NavLink
+                  to="/admin/orders/new"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70' : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  New Order
+                </NavLink>
+                <NavLink
+                  to="/admin/orders"
+                  end
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70' : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  <List className="w-4 h-4" />
+                  All Orders
+                </NavLink>
+                <NavLink
+                  to="/admin/orders/delivery"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70' : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  <Truck className="w-4 h-4" />
+                  Delivery Order
+                </NavLink>
+                <NavLink
+                  to="/admin/orders/cancelled"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70' : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  <Ban className="w-4 h-4" />
+                  Cancelled Order
                 </NavLink>
               </div>
             )}

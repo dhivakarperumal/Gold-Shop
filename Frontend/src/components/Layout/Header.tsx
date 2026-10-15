@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, Plus, UserPlus, FileText } from 'lucide-react';
+import { Menu, Search, Plus, UserPlus, FileText, Bell } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,6 +14,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const currentPageTitle = (() => {
     if (location.pathname === '/admin' || location.pathname === '/admin/') return 'Dashboard';
     if (location.pathname === '/admin/loans' && location.search === '?mode=return') return 'Gold Return';
@@ -53,12 +54,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h1 className="truncate text-base font-bold text-[#4b1715] sm:text-lg">{currentPageTitle}</h1>
+        <div className="flex min-w-0 flex-col justify-center">
+          <h1 className="truncate text-base font-bold leading-tight text-[#4b1715] sm:text-lg">{currentPageTitle}</h1>
+          <p className="truncate text-xs leading-tight text-gray-500 sm:text-sm">Welcome to Sri Venkateswara Gold Shop</p>
+        </div>
       </div>
       
       {/* Center Search Bar & Quick Actions */}
-      <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-8 gap-3">
-        <div className="w-1/2 flex items-center border border-gray-300 rounded-md bg-white overflow-hidden transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+      <div className="ml-auto mr-3 hidden items-center gap-3 lg:flex">
+        <div className="flex w-72 items-center overflow-hidden rounded-md border border-gray-300 bg-white transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
           <input 
             type="text" 
             placeholder="Search..." 
@@ -116,13 +120,42 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
       
-      {/* Right Profile Dropdown */}
-      <div className="relative ml-auto">
+      {/* Notifications and Profile */}
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Notifications"
+            aria-expanded={isNotificationsOpen}
+            onClick={() => setIsNotificationsOpen((open) => !open)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#5a1112] text-[#f3c64e] transition-colors hover:bg-[#3f0b0c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d9a441] focus-visible:ring-offset-2"
+          >
+            <Bell className="h-5 w-5" />
+          </button>
+          {isNotificationsOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Close notifications"
+                className="fixed inset-0 z-40 cursor-default"
+                onClick={() => setIsNotificationsOpen(false)}
+              />
+              <div className="absolute right-0 z-50 mt-2 w-72 rounded-lg border border-gray-200 bg-white shadow-lg">
+                <div className="border-b border-gray-100 px-4 py-3">
+                  <h2 className="text-sm font-bold text-gray-900">Notifications</h2>
+                </div>
+                <p className="px-4 py-6 text-center text-sm text-gray-500">No notifications yet.</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="relative">
         <button 
-          className="flex items-center gap-3 focus:outline-none rounded-lg hover:bg-gray-50 p-1 pr-2 transition-colors"
+          className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-1.5 pr-3 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#74180f]"
           onClick={() => setIsProfileOpen(!isProfileOpen)}
         >
-          <div className="w-9 h-9 rounded-full bg-[#1b88f3] flex items-center justify-center text-white text-[15px] font-medium shadow-sm">
+          <div className="w-9 h-9 rounded-full bg-[#5a1112] flex items-center justify-center text-[#f3c64e] text-[15px] font-medium shadow-sm">
             {user?.username?.[0]?.toUpperCase() || 'S'}
           </div>
           <span className="text-[15px] font-medium text-[#111827] hidden sm:block">
@@ -137,7 +170,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               onClick={() => setIsProfileOpen(false)}
             ></div>
             
-            <div className="absolute right-0 mt-2 w-[220px] bg-white rounded-md shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-200 z-50 py-1 overflow-hidden transform origin-top-right animate-in fade-in zoom-in duration-150">
+            <div className="absolute right-0 mt-2 w-[220px] bg-red-600 rounded-md shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-200 z-50 py-1 overflow-hidden transform origin-top-right animate-in fade-in zoom-in duration-150">
               <div className="px-4 py-2.5">
                 <p className="text-[13px] font-bold text-gray-900">{user?.username || 'Account'} - My Account</p>
               </div>
@@ -175,6 +208,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
           </>
         )}
+        </div>
       </div>
     </header>
   );
