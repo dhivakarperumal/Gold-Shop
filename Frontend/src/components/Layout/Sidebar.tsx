@@ -28,8 +28,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: 'Loans', path: '/admin/loans', icon: Coins, roles: ['admin', 'user'], end: true },
     { name: 'Gold Return', path: '/admin/loans?mode=return', icon: Gem, roles: ['admin', 'user'], end: true },
     { name: 'Payments', path: '/admin/payments', icon: Wallet, roles: ['admin', 'user'], end: true },
-    { name: 'Dealers', path: '/admin/dealers', icon: Briefcase, roles: ['admin'], end: true },
-    { name: 'Reports', path: '/admin/reports', icon: BarChart3, roles: ['admin'], end: true }
+    { name: 'Dealers', path: '/admin/dealers', icon: Briefcase, roles: ['admin'], end: true }
   ];
 
   const filteredNavItems = navItems.filter(item => 
@@ -291,9 +290,38 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       <Video className="w-4 h-4" />
                       Video Management
                     </NavLink>
+                    <NavLink
+                      to="/admin/marketing/gallery"
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                            : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                        }`
+                      }
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      Gallery Management
+                    </NavLink>
                   </div>
                 )}
               </>
+            )}
+            {user?.role === 'admin' && (
+              <NavLink
+                to="/admin/reports"
+                end
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[#d9a441] text-[#35110c] shadow-md ring-1 ring-[#f3d36a]/70'
+                      : 'text-[#f8e8c1] hover:bg-white/10 hover:text-white'
+                  }`
+                }
+              >
+                <BarChart3 className="w-5 h-5" />
+                Reports
+              </NavLink>
             )}
           </nav>
         </div>

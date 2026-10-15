@@ -22,7 +22,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import api, { API_URL } from "../../api";
+import api, { BACKEND_BASE_URL } from "../../api";
 import toast from "react-hot-toast";
 
 const GalleryManagement = () => {
@@ -117,8 +117,7 @@ const GalleryManagement = () => {
   const getImageUrl = (path) => {
     if (!path) return "linear-gradient(135deg, #f3f4f6, #e5e7eb)";
     if (path.startsWith("http") || path.startsWith("data:")) return `url(${path})`;
-    const baseUrl = API_URL.replace("/api", "");
-    return `url(${baseUrl}${path})`;
+    return `url(${BACKEND_BASE_URL}${path})`;
   };
 
   const formatDate = (dateStr) => {

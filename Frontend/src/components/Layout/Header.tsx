@@ -30,6 +30,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       '/admin/products/stock': 'Stock Details',
       '/admin/marketing/banners': 'Banner Management',
       '/admin/marketing/videos': 'Video Management',
+      '/admin/marketing/gallery': 'Gallery Management',
     };
     return pageTitles[location.pathname]
       || (location.pathname.startsWith('/admin/products/') ? 'Products' : 'Admin Panel');

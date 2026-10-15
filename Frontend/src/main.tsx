@@ -36,6 +36,7 @@ import { Toaster } from "./components/CommonComponents/Toaster";
 import { PrivateRoute } from "./context/PrivateRoute";
 import BannerManagement from "./Admin/Marketing/BannerManagement.jsx";
 import VideoManagement from "./Admin/Marketing/VideoManagement.jsx";
+import GalleryManagement from "./Admin/Marketing/GalleryManagement.jsx";
 import About from "./pages/About";
 import ShopPage from "./pages/ShopPage.tsx";
 import OffersPage from "./pages/OffersPage";
@@ -117,6 +118,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute allowedRoles={["admin", "user"]}>
             <VideoManagement />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "marketing/gallery",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "user"]}>
+            <GalleryManagement />
           </PrivateRoute>
         )
       }
