@@ -48,12 +48,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar Content */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-72 bg-[#1c4587] flex flex-col
+        w-72 bg-gradient-to-b from-[#A87900] to-[#806000] flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Company Switcher Box */}
-        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#12316a] transition-colors relative">
+        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/10 transition-colors relative">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded bg-white/20 flex items-center justify-center text-white font-bold shrink-0">
               <Briefcase className="w-4 h-4" />
@@ -86,8 +86,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   const isActive = location.pathname + location.search === item.path;
                   return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive 
-                      ? 'bg-[#2b58b4] text-white shadow-sm' 
-                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                      : 'text-amber-50 hover:bg-white/10 hover:text-white'
                   }`;
                 }}
               >
@@ -101,8 +101,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={() => setProductsOpen(!productsOpen)}
               className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 productSectionActive
-                  ? 'bg-[#2b58b4] text-white shadow-sm'
-                  : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                  ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                  : 'text-amber-50 hover:bg-white/10 hover:text-white'
               }`}
             >
               <span className="flex items-center gap-3">
@@ -119,8 +119,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#2b58b4] text-white shadow-sm'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -132,8 +132,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#2b58b4] text-white shadow-sm'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -145,8 +145,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#2b58b4] text-white shadow-sm'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -158,8 +158,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? 'bg-[#2b58b4] text-white shadow-sm'
-                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                        : 'text-amber-50 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
@@ -177,8 +177,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   aria-expanded={marketingOpen}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     marketingSectionActive
-                      ? 'bg-[#2b58b4] text-white shadow-sm'
-                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                      : 'text-amber-50 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-3">
@@ -194,8 +194,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isActive
-                            ? 'bg-[#2b58b4] text-white shadow-sm'
-                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                            ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                            : 'text-amber-50 hover:bg-white/10 hover:text-white'
                         }`
                       }
                     >
@@ -207,8 +207,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           isActive
-                            ? 'bg-[#2b58b4] text-white shadow-sm'
-                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                            ? 'bg-[#F3D36A] text-[#3B2A00] shadow-sm'
+                            : 'text-amber-50 hover:bg-white/10 hover:text-white'
                         }`
                       }
                     >
@@ -223,8 +223,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Bottom Logo */}
-        <div className="p-6 bg-[#0f285c] flex items-center justify-start">
-            <span className="font-bold text-2xl text-white tracking-tighter">KanakGold</span>
+        <div className="p-6 bg-[#705200] flex items-center justify-start">
+            <span className="font-bold text-2xl text-amber-50 tracking-tighter">KanakGold</span>
         </div>
       </aside>
     </>

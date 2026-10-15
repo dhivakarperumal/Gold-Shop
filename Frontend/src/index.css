@@ -23,10 +23,10 @@ body {
   --color-brand-900: #4A2909;
   --color-brand-950: #2B1806;
 
-  /* Primary - Navy Blue */
-  --color-primary: #111C36;
-  --color-primary-light: #263653;
-  --color-primary-dark: #091126;
+  /* Primary - Burgundy */
+  --color-primary: #5A1112;
+  --color-primary-light: #74180F;
+  --color-primary-dark: #3F0B0C;
 
   /* Secondary - Gold */
   --color-secondary: #D97700;

@@ -35,6 +35,7 @@ import { Toaster } from "./components/CommonComponents/Toaster";
 import { PrivateRoute } from "./context/PrivateRoute";
 import BannerManagement from "./Admin/Marketing/BannerManagement.jsx";
 import VideoManagement from "./Admin/Marketing/VideoManagement.jsx";
+import About from "./pages/About";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
+      { path: "about", element: <About /> },
       { path: "product/:id", element: <ProductDetails /> }
     ]
   },

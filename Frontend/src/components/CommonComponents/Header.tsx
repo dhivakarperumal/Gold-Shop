@@ -161,7 +161,7 @@ export default function Header() {
         ) : (
           <Link 
             to="/login"
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg font-bold hover:bg-primary-dark transition-all shadow-md text-sm"
+            className="flex items-center gap-2 bg-[#5a1112] text-white px-5 py-2 rounded-lg font-bold hover:bg-[#3f0b0c] transition-all shadow-md text-sm"
           >
             <User className="w-4 h-4" />
             Login

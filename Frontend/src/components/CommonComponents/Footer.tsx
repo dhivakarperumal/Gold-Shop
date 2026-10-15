@@ -21,7 +21,7 @@ const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=18%2F09%2
 
 export default function Footer() {
   return (
-    <footer className="bg-primary font-sans text-[#f9e8b2]">
+    <footer className="bg-[#5a1112] font-sans text-[#f9e8b2]">
       <PageContainer className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <div className="min-w-0">
           <Link to="/" className="inline-flex items-center gap-3">
@@ -110,7 +110,7 @@ export default function Footer() {
         </div>
       </PageContainer>
 
-      <div className="border-t border-white/10 bg-primary-dark">
+      <div className="border-t border-white/10 bg-[#5a1112]">
         <PageContainer className="flex flex-col items-center justify-between gap-3 py-5 text-center text-xs text-[#ead7b5] sm:flex-row sm:text-left">
           <p>© 2026 Sri Vengateshwara. All Rights Reserved.</p>
           <p className="inline-flex items-center gap-1">Made with <Heart className="h-3.5 w-3.5 fill-[#f5c75e] text-[#f5c75e]" /> for your precious moments.</p>
