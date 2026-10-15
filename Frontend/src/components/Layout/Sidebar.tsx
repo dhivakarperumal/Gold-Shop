@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video, ClipboardList, Truck, Ban, MessageCircle } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video, ClipboardList, Truck, Ban, MessageCircle, ReceiptText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -66,8 +66,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </svg>
             </div>
             <div className="flex min-w-0 flex-col overflow-hidden">
-              <span className="truncate font-serif text-sm font-bold tracking-wide text-[#f3c64e]">Sri Venkateswara</span>
-              <span className="truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-[#f8e8c1]">Thanga Maligai</span>
+              <span className="truncate font-serif text-base font-bold leading-6 tracking-wide text-[#f3c64e]">Sri Venkateswara</span>
+              <span className="truncate text-[10px] font-semibold uppercase leading-4 tracking-[0.12em] text-[#f8e8c1]">Thanga Maligai</span>
             </div>
           </div>
 
@@ -103,6 +103,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {item.name}
               </NavLink>
             ))}
+
+            {user && ['admin', 'user'].includes(user.role) && (
+              <button
+                type="button"
+                disabled
+                title="Billing page coming soon"
+                aria-label="Billing page coming soon"
+                className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#f8e8c1]/60"
+              >
+                <ReceiptText className="h-5 w-5" />
+                Billing
+              </button>
+            )}
 
             <button
               type="button"
