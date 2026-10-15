@@ -115,8 +115,8 @@ export default function CartPage() {
                   <span className="text-xl font-extrabold text-[#74180f]">{formatPrice(subtotal)}</span>
                 </div>
                 <p className="mt-2 text-right text-[11px] text-gray-500">Final taxes, if applicable, confirmed at purchase.</p>
-                <Link to="/contact" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#74180f] px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-[#5a1112]/15 transition hover:bg-[#5a1112]">
-                  Contact us to complete your order <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                <Link to="/checkout" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#74180f] px-4 py-3.5 text-sm font-bold text-white shadow-md shadow-[#5a1112]/15 transition hover:bg-[#5a1112]">
+                  Continue to checkout <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <div className="mt-4 space-y-2 border-t border-[#f0e5d5] pt-4 text-xs text-gray-600">
                   <p className="flex items-center gap-2"><Truck className="h-4 w-4 text-[#b98531]" aria-hidden="true" /> Delivery details confirmed by our team</p>
