@@ -11,6 +11,110 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+async function migrateOrderIdsToAutoIncrement(connection) {
+  const [orderIdColumns] = await connection.execute(
+    `SELECT DATA_TYPE, EXTRA
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'id'`
+  );
+  const orderIdColumn = orderIdColumns[0];
+  if (!orderIdColumn) {
+    throw new Error('Cannot migrate orders.id because the column does not exist');
+  }
+  if (orderIdColumn.DATA_TYPE === 'int' && orderIdColumn.EXTRA.includes('auto_increment')) {
+    return;
+  }
+
+  const [references] = await connection.execute(
+    `SELECT TABLE_NAME, CONSTRAINT_NAME
+     FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+     WHERE CONSTRAINT_SCHEMA = DATABASE()
+       AND REFERENCED_TABLE_NAME = 'orders'
+       AND REFERENCED_COLUMN_NAME = 'id'`
+  );
+  const unsupportedReferences = references.filter((reference) => reference.TABLE_NAME !== 'order_items');
+  if (unsupportedReferences.length > 0) {
+    throw new Error('Cannot migrate orders.id while other tables reference it');
+  }
+  const orderItemsReference = references.find((reference) => reference.TABLE_NAME === 'order_items');
+
+  await connection.execute('DROP TEMPORARY TABLE IF EXISTS order_id_map');
+  await connection.execute(`
+    CREATE TEMPORARY TABLE order_id_map (
+      new_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      old_id CHAR(36) NOT NULL UNIQUE
+    )
+  `);
+  await connection.execute(
+    'INSERT INTO order_id_map (old_id) SELECT id FROM orders ORDER BY created_at, id'
+  );
+  await connection.execute('ALTER TABLE orders ADD COLUMN numeric_order_id INT NULL');
+  await connection.execute('ALTER TABLE order_items ADD COLUMN numeric_order_id INT NULL');
+  await connection.execute(
+    `UPDATE orders o
+     JOIN order_id_map m ON m.old_id = o.id
+     SET o.numeric_order_id = m.new_id`
+  );
+  await connection.execute(
+    `UPDATE order_items oi
+     JOIN order_id_map m ON m.old_id = oi.order_id
+     SET oi.numeric_order_id = m.new_id`
+  );
+
+  const [[unmappedOrders]] = await connection.execute(
+    'SELECT COUNT(*) AS count FROM orders WHERE numeric_order_id IS NULL'
+  );
+  const [[unmappedItems]] = await connection.execute(
+    'SELECT COUNT(*) AS count FROM order_items WHERE numeric_order_id IS NULL'
+  );
+  if (Number(unmappedOrders.count) > 0 || Number(unmappedItems.count) > 0) {
+    throw new Error('Cannot migrate orders.id because some order records could not be mapped');
+  }
+
+  if (orderItemsReference) {
+    const constraintName = orderItemsReference.CONSTRAINT_NAME.replace(/`/g, '``');
+    await connection.execute(
+      `ALTER TABLE order_items DROP FOREIGN KEY \`${constraintName}\``
+    );
+  }
+  const [orderItemIndexes] = await connection.execute(
+    `SELECT DISTINCT INDEX_NAME
+     FROM INFORMATION_SCHEMA.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'order_items'
+       AND COLUMN_NAME = 'order_id'
+       AND INDEX_NAME <> 'PRIMARY'`
+  );
+  for (const index of orderItemIndexes) {
+    const indexName = index.INDEX_NAME.replace(/`/g, '``');
+    await connection.execute(`ALTER TABLE order_items DROP INDEX \`${indexName}\``);
+  }
+  await connection.execute(`
+    ALTER TABLE order_items
+      DROP COLUMN order_id,
+      CHANGE COLUMN numeric_order_id order_id INT NOT NULL,
+      ADD INDEX idx_order_items_order (order_id)
+  `);
+  await connection.execute(`
+    ALTER TABLE orders
+      DROP PRIMARY KEY,
+      DROP COLUMN id,
+      CHANGE COLUMN numeric_order_id id INT NOT NULL AUTO_INCREMENT,
+      ADD PRIMARY KEY (id)
+  `);
+
+  const constraintName = orderItemsReference
+    ? orderItemsReference.CONSTRAINT_NAME.replace(/`/g, '``')
+    : 'fk_order_items_order';
+  await connection.execute(
+    `ALTER TABLE order_items
+     ADD CONSTRAINT \`${constraintName}\`
+     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE`
+  );
+  await connection.execute('DROP TEMPORARY TABLE order_id_map');
+  console.log('Migrated orders.id to sequential numeric IDs');
+}
+
 // Initialize Database
 async function initializeDatabase() {
   const connection = await pool.getConnection();
@@ -98,6 +202,10 @@ async function initializeDatabase() {
         user_id VARCHAR(255) NOT NULL,
         product_id VARCHAR(100) NOT NULL,
         quantity INT NOT NULL DEFAULT 1,
+        product_name VARCHAR(255),
+        product_image TEXT,
+        price DECIMAL(12,2),
+        offer_price DECIMAL(12,2),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY unique_user_product (user_id, product_id),
@@ -105,7 +213,143 @@ async function initializeDatabase() {
         FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
       )
     `);
+    const cartSnapshotColumns = [
+      ['product_name', 'VARCHAR(255) NULL'],
+      ['product_image', 'TEXT NULL'],
+      ['price', 'DECIMAL(12,2) NULL'],
+      ['offer_price', 'DECIMAL(12,2) NULL']
+    ];
+    for (const [columnName, columnDefinition] of cartSnapshotColumns) {
+      const [columns] = await connection.execute(
+        `SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cart_items' AND COLUMN_NAME = ?`,
+        [columnName]
+      );
+      if (columns.length === 0) {
+        await connection.execute(
+          `ALTER TABLE cart_items ADD COLUMN ${columnName} ${columnDefinition}`
+        );
+      }
+    }
+    const [cartRowsToBackfill] = await connection.execute(
+      `SELECT c.id, p.name, p.images, p.price, p.offer_price
+       FROM cart_items c
+       JOIN products p ON p.product_id = c.product_id
+       WHERE c.product_name IS NULL OR c.product_image IS NULL
+          OR c.price IS NULL OR c.offer_price IS NULL`
+    );
+    for (const cartRow of cartRowsToBackfill) {
+      let productImage = null;
+      try {
+        const images = cartRow.images ? JSON.parse(cartRow.images) : [];
+        productImage = Array.isArray(images) ? images[0] || null : null;
+      } catch (error) {
+        console.error(`Could not backfill cart image for item ${cartRow.id}:`, error);
+      }
+      await connection.execute(
+        `UPDATE cart_items
+         SET product_name = COALESCE(product_name, ?),
+             product_image = COALESCE(product_image, ?),
+             price = COALESCE(price, ?),
+             offer_price = COALESCE(offer_price, ?)
+         WHERE id = ?`,
+        [cartRow.name, productImage, cartRow.price, cartRow.offer_price, cartRow.id]
+      );
+    }
     console.log('Cart items table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS customer_addresses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        full_name VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        email VARCHAR(254) NOT NULL,
+        address_line1 VARCHAR(150) NOT NULL,
+        address_line2 VARCHAR(150),
+        pincode VARCHAR(10) NOT NULL,
+        city VARCHAR(80) NOT NULL,
+        state VARCHAR(80) NOT NULL,
+        is_default TINYINT(1) NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_customer_addresses_user (user_id),
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Customer addresses table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_number VARCHAR(40) UNIQUE NOT NULL,
+        user_id VARCHAR(255) NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'Pending',
+        full_name VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        email VARCHAR(254) NOT NULL,
+        address_line1 VARCHAR(150) NOT NULL,
+        address_line2 VARCHAR(150),
+        pincode VARCHAR(10) NOT NULL,
+        city VARCHAR(80) NOT NULL,
+        state VARCHAR(80) NOT NULL,
+        delivery_option ENUM('standard', 'express') NOT NULL DEFAULT 'standard',
+        payment_method ENUM('contact', 'cod') NOT NULL DEFAULT 'contact',
+        subtotal DECIMAL(12,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_orders_user_created (user_id, created_at),
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Orders table initialized');
+
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS order_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        product_id VARCHAR(100),
+        product_name VARCHAR(255) NOT NULL,
+        product_image TEXT,
+        quantity INT NOT NULL,
+        unit_price DECIMAL(12,2) NOT NULL,
+        line_total DECIMAL(12,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_order_items_order (order_id),
+        CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL
+      )
+    `);
+    await migrateOrderIdsToAutoIncrement(connection);
+    const [orderImageColumn] = await connection.execute(
+      `SELECT COLUMN_NAME
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items' AND COLUMN_NAME = 'product_image'`
+    );
+    if (orderImageColumn.length === 0) {
+      await connection.execute('ALTER TABLE order_items ADD COLUMN product_image TEXT NULL');
+    }
+    const [orderRowsToBackfill] = await connection.execute(
+      `SELECT oi.id, p.images
+       FROM order_items oi
+       JOIN products p ON p.product_id = oi.product_id
+       WHERE oi.product_image IS NULL`
+    );
+    for (const orderRow of orderRowsToBackfill) {
+      let productImage = null;
+      try {
+        const images = orderRow.images ? JSON.parse(orderRow.images) : [];
+        productImage = Array.isArray(images) ? images[0] || null : null;
+      } catch (error) {
+        console.error(`Could not backfill order item image for item ${orderRow.id}:`, error);
+      }
+      await connection.execute(
+        'UPDATE order_items SET product_image = ? WHERE id = ?',
+        [productImage, orderRow.id]
+      );
+    }
+    console.log('Order items table initialized');
 
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS banners (

@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, Check, Minus, Plus, ShieldCheck, ShoppingBag, Trash2, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
+import { useAuth } from '../context/AuthContext';
 import { useStoreCart } from '../context/useStoreCart';
 
 const formatPrice = (price: number) => new Intl.NumberFormat('en-IN', {
@@ -10,7 +11,8 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-IN', {
 }).format(price);
 
 export default function CartPage() {
-  const { items, itemCount, subtotal, savings, updateQuantity, removeItem } = useStoreCart();
+  const { items, itemCount, subtotal, savings, updateQuantity, removeItem, isLoading, error } = useStoreCart();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#fffdf8] text-[#381413]">
@@ -24,7 +26,17 @@ export default function CartPage() {
       />
 
       <div className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {!items.length ? (
+        {error && <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
+        {isLoading ? (
+          <section role="status" className="mx-auto max-w-xl rounded-2xl border border-[#f0e5d5] bg-white px-6 py-12 text-center text-sm text-gray-600">
+            Loading your cart…
+          </section>
+        ) : !items.length && error ? (
+          <section className="mx-auto max-w-xl rounded-2xl border border-[#f0e5d5] bg-white px-6 py-12 text-center">
+            <h2 className="font-serif text-xl font-bold text-[#5a1112]">Your cart could not be loaded</h2>
+            <p className="mt-2 text-sm text-gray-600">Please sign in again or retry after checking your connection.</p>
+          </section>
+        ) : !items.length ? (
           <section className="mx-auto flex max-w-xl flex-col items-center rounded-2xl border border-[#f0e5d5] bg-white px-6 py-12 text-center shadow-[0_12px_40px_rgba(73,24,18,0.06)] sm:py-16">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#fff4df] text-[#8b5d22]">
               <ShoppingBag className="h-7 w-7" aria-hidden="true" />
@@ -46,6 +58,7 @@ export default function CartPage() {
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Continue shopping
               </Link>
             </div>
+            {!user && <p className="mb-5 rounded-lg bg-[#fff8ec] p-3 text-xs leading-5 text-[#5a1112]">This cart is temporary for this visit. <Link to="/login" className="font-bold underline">Sign in</Link> to save cart items to your account.</p>}
 
             <div className="grid items-start gap-6 lg:grid-cols-[1.7fr_0.8fr]">
               <section aria-label="Cart items" className="overflow-hidden rounded-2xl border border-[#f0e5d5] bg-white shadow-[0_12px_40px_rgba(73,24,18,0.05)]">

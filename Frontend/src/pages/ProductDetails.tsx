@@ -35,7 +35,7 @@ export function ProductDetails() {
   const [activeTab, setActiveTab] = useState<ProductTab>('Description');
   const [cartMessage, setCartMessage] = useState('');
   const [relatedCartMessage, setRelatedCartMessage] = useState('');
-  const { addItem } = useStoreCart();
+  const { addItem, error: cartError } = useStoreCart();
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
@@ -108,7 +108,7 @@ export function ProductDetails() {
   };
 
   const discountAmount = product.price - (product.offerPrice || product.price);
-  const addProductToCart = () => {
+  const addProductToCart = async () => {
     const cartProduct: CartProduct = {
       id: String(product.productId),
       name: String(product.name),
@@ -121,7 +121,7 @@ export function ProductDetails() {
       stock: Number(product.stock) || 0,
       image: getImageUrl(images[0]),
     };
-    if (addItem(cartProduct, quantity)) {
+    if (await addItem(cartProduct, quantity)) {
       setCartMessage(`${cartProduct.name} added to your cart.`);
       return true;
     } else {
@@ -130,13 +130,13 @@ export function ProductDetails() {
     }
   };
 
-  const handleBuyNow = () => {
-    if (addProductToCart()) {
+  const handleBuyNow = async () => {
+    if (await addProductToCart()) {
       navigate('/cart');
     }
   };
 
-  const addRelatedToCart = (relatedProduct: ProductDetailsRecord) => {
+  const addRelatedToCart = async (relatedProduct: ProductDetailsRecord) => {
     const image = relatedProduct.images?.[0] || null;
     const cartProduct: CartProduct = {
       id: String(relatedProduct.productId),
@@ -150,7 +150,7 @@ export function ProductDetails() {
       stock: Number(relatedProduct.stock) || 0,
       image: getImageUrl(image),
     };
-    setRelatedCartMessage(addItem(cartProduct)
+    setRelatedCartMessage(await addItem(cartProduct)
       ? `${cartProduct.name} added to your cart.`
       : `${cartProduct.name} is out of stock or at its available quantity limit.`);
   };
@@ -291,7 +291,7 @@ export function ProductDetails() {
                 <Heart className="h-5 w-5" />
               </button>
             </div>
-            {cartMessage && <p role="status" className="mt-2 text-sm font-medium text-[#5a1112]">{cartMessage}</p>}
+            {(cartError || cartMessage) && <p role={cartError ? 'alert' : 'status'} className="mt-2 text-sm font-medium text-[#5a1112]">{cartError || cartMessage}</p>}
 
             <div className="mt-6 grid grid-cols-3 divide-x divide-[#f0e5d5] border-t border-[#f0e5d5] pt-5 text-center">
               <div className="px-2"><BadgeCheck className="mx-auto h-6 w-6 text-[#c18b2c]" /><p className="mt-2 text-[10px] font-bold text-[#4b1715] sm:text-xs">Hallmarked</p><p className="mt-0.5 text-[9px] text-gray-500 sm:text-[10px]">Certified purity</p></div>
@@ -380,7 +380,7 @@ export function ProductDetails() {
               </div>
               <Link to="/shop" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#74180f] hover:text-[#ad7929] sm:text-sm">View All <ArrowRight className="h-4 w-4" /></Link>
             </div>
-            {relatedCartMessage && <p role="status" className="mb-3 text-sm font-medium text-[#5a1112]">{relatedCartMessage}</p>}
+            {(cartError || relatedCartMessage) && <p role={cartError ? 'alert' : 'status'} className="mb-3 text-sm font-medium text-[#5a1112]">{cartError || relatedCartMessage}</p>}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {relatedProducts.map((relatedProduct) => {
                 const image = relatedProduct.images?.[0] || null;

@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown, Menu, X } from 'lucide-react';
+import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import PageContainer from './PageContainer.jsx';
 import { useStoreCart } from '../../context/useStoreCart';
+import api from '../../api';
+import type { Category } from '../../lib/categoryData';
 
 export default function Header() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [hoveredCategory, setHoveredCategory] = useState('');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,6 +23,34 @@ export default function Header() {
   const isShopActive = location.pathname === '/shop';
   const isOffersActive = location.pathname === '/offers';
   const isContactActive = location.pathname === '/contact';
+
+  useEffect(() => {
+    let mounted = true;
+    api.get<{ categories?: Category[] }>('/categories')
+      .then(({ data }) => {
+        if (!mounted) return;
+        const fetchedCategories = Array.isArray(data?.categories) ? data.categories : [];
+        setCategories(fetchedCategories
+          .filter((category) => category.status !== 'Inactive' && typeof category.categoryName === 'string')
+          .map((category) => ({
+            ...category,
+            subCategories: Array.isArray(category.subCategories)
+              ? category.subCategories.filter((subCategory): subCategory is string => typeof subCategory === 'string' && Boolean(subCategory.trim()))
+              : [],
+          })));
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load navbar categories:', error);
+        if (mounted) setCategoriesError(true);
+      })
+      .finally(() => {
+        if (mounted) setCategoriesLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -43,25 +77,62 @@ export default function Header() {
         <Link to="/shop" aria-current={isShopActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isShopActive ? 'text-secondary-dark' : ''}`}>Shop</Link>
         
 
-        <div className="relative group">
+        <div className="relative group/category-menu">
           <button
             type="button"
             aria-current={location.hash === '#products' ? 'location' : undefined}
-            className={`flex items-center gap-1 hover:text-secondary-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-dark rounded ${location.hash === '#products' ? 'text-secondary-dark' : ''}`}
+            aria-haspopup="true"
+            className={`flex items-center gap-1 rounded transition-colors hover:text-secondary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-dark ${location.hash === '#products' ? 'text-secondary-dark' : ''}`}
           >
             Category
-            <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
+            <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover/category-menu:rotate-180 group-focus-within/category-menu:rotate-180" />
           </button>
-          <div className="invisible absolute left-0 top-full z-[70] mt-3 w-52 translate-y-2 rounded-xl border border-gray-100 bg-white py-2 opacity-0 shadow-xl transition-all duration-200 pointer-events-none group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
-            {['Gold Rings', 'Gold Chains', 'Gold Necklaces', 'Gold Earrings'].map((category) => (
-              <Link
-                key={category}
-                to="/shop"
-                className="block px-4 py-2.5 text-sm font-semibold text-gray-600 transition-colors hover:bg-brand-50 hover:text-secondary-dark"
-              >
-                {category}
-              </Link>
-            ))}
+          <div className="invisible pointer-events-none absolute left-0 top-full z-[70] w-[min(480px,calc(100vw-2rem))] rounded-xl border border-gray-100 bg-white opacity-0 shadow-xl transition-[opacity,visibility] duration-150 group-hover/category-menu:visible group-hover/category-menu:pointer-events-auto group-hover/category-menu:opacity-100 group-focus-within/category-menu:visible group-focus-within/category-menu:pointer-events-auto group-focus-within/category-menu:opacity-100">
+            {categoriesLoading ? (
+              <p className="px-4 py-3 text-sm text-gray-500">Loading categories...</p>
+            ) : categoriesError ? (
+              <p role="alert" className="px-4 py-3 text-sm text-red-600">Unable to load categories.</p>
+            ) : categories.length ? (
+              <div className="grid grid-cols-2">
+                <div className="max-h-[min(70vh,640px)] overflow-y-auto py-2">
+                  {categories.map(({ categoryName }) => (
+                    <Link
+                      key={categoryName}
+                      to={`/shop?category=${encodeURIComponent(categoryName)}`}
+                      onMouseEnter={() => setHoveredCategory(categoryName)}
+                      onFocus={() => setHoveredCategory(categoryName)}
+                      className={`flex items-center justify-between px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-brand-50 hover:text-secondary-dark focus-visible:bg-brand-50 focus-visible:text-secondary-dark ${hoveredCategory === categoryName ? 'bg-brand-50 text-secondary-dark' : 'text-gray-600'}`}
+                    >
+                      {categoryName}
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </Link>
+                  ))}
+                </div>
+                <div className="max-h-[min(70vh,640px)] overflow-y-auto border-l border-gray-100 py-2">
+                  {categories.find((category) => category.categoryName === hoveredCategory) ? (
+                    <>
+                      <Link
+                        to={`/shop?category=${encodeURIComponent(hoveredCategory)}`}
+                        className="block border-b border-gray-100 px-4 py-2.5 text-sm font-bold text-secondary-dark hover:bg-brand-50"
+                      >
+                        View all {hoveredCategory}
+                      </Link>
+                      {categories.find((category) => category.categoryName === hoveredCategory)?.subCategories.map((subCategory) => (
+                        <Link
+                          key={subCategory}
+                          to={`/shop?category=${encodeURIComponent(hoveredCategory)}&subCategory=${encodeURIComponent(subCategory)}`}
+                          className="block px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-brand-50 hover:text-secondary-dark focus-visible:bg-brand-50 focus-visible:text-secondary-dark"
+                        >
+                          {subCategory}
+                        </Link>
+                      ))}
+                    </>
+                  ) : (
+                    <p className="px-4 py-3 text-sm text-gray-500">Hover over a category to view its subcategories.</p>
+                  )}
+                </div>
+              </div>
+            ) : <p className="px-4 py-3 text-sm text-gray-500">No categories available.</p>}
           </div>
         </div>
         <Link to="/offers" aria-current={isOffersActive ? 'page' : undefined} className={`transition-colors hover:text-secondary-dark ${isOffersActive ? 'text-secondary-dark' : ''}`}>Offers</Link>
@@ -123,7 +194,7 @@ export default function Header() {
                   )}
 
                   <Link 
-                    to="/admin"
+                    to="/account"
                     onClick={() => setIsProfileOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                   >
@@ -175,12 +246,41 @@ export default function Header() {
             <Link to="/offers" onClick={closeMobileMenu} aria-current={isOffersActive ? 'page' : undefined} className={`rounded-lg px-3 py-3 text-sm font-semibold hover:bg-brand-50 ${isOffersActive ? 'text-secondary-dark' : 'text-gray-700'}`}>Offers</Link>
             <div className="border-t border-gray-100 py-2">
               <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Categories</p>
-              {['Gold Rings', 'Gold Chains', 'Gold Necklaces', 'Gold Earrings'].map((category) => (
-                <Link key={category} to="/shop" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">{category}</Link>
-              ))}
+              {categoriesLoading ? (
+                <p className="px-3 py-2 text-sm text-gray-500">Loading categories...</p>
+              ) : categoriesError ? (
+                <p role="alert" className="px-3 py-2 text-sm text-red-600">Unable to load categories.</p>
+              ) : categories.length ? categories.map(({ categoryName, subCategories }) => (
+                <details key={categoryName} className="group/mobile-category">
+                  <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">
+                    {categoryName}
+                    <ChevronDown className="h-4 w-4 transition-transform group-open/mobile-category:rotate-180" />
+                  </summary>
+                  <div className="pb-2 pl-3">
+                    <Link
+                      to={`/shop?category=${encodeURIComponent(categoryName)}`}
+                      onClick={closeMobileMenu}
+                      className="block rounded-lg px-3 py-2 text-xs font-semibold text-secondary-dark hover:bg-brand-50"
+                    >
+                      View all {categoryName}
+                    </Link>
+                    {subCategories.map((subCategory) => (
+                      <Link
+                        key={subCategory}
+                        to={`/shop?category=${encodeURIComponent(categoryName)}&subCategory=${encodeURIComponent(subCategory)}`}
+                        onClick={closeMobileMenu}
+                        className="block rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-brand-50 hover:text-secondary-dark"
+                      >
+                        {subCategory}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+              )) : <p className="px-3 py-2 text-sm text-gray-500">No categories available.</p>}
             </div>
             <div className="border-t border-gray-100 py-2">
               <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Pages</p>
+              {user && <Link to="/account" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">My Account</Link>}
               <Link to="/contact" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">Contact us</Link>
               <Link to="/terms-and-conditions" onClick={closeMobileMenu} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-secondary-dark">Terms and Conditions</Link>
             </div>

@@ -1,12 +1,29 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { ArrowLeft, ArrowRight, CreditCard, LockKeyhole, MapPin, ShieldCheck, Truck } from 'lucide-react';
+import api from '../api';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import { useAuth } from '../context/AuthContext';
 import { useStoreCart } from '../context/useStoreCart';
 
 type DeliveryOption = 'standard' | 'express';
 type PaymentOption = 'contact' | 'cod';
+
+interface SavedAddress {
+  id: number;
+  fullName: string;
+  phone: string;
+  email: string;
+  addressLine1: string;
+  addressLine2: string;
+  pincode: string;
+  city: string;
+  state: string;
+  isDefault: boolean;
+}
+
+type CheckoutFields = Omit<SavedAddress, 'id' | 'isDefault'>;
 
 const formatPrice = (price: number) => new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -17,15 +34,21 @@ const formatPrice = (price: number) => new Intl.NumberFormat('en-IN', {
 const fieldClassName = 'mt-1.5 w-full rounded-md border border-[#e8dfd5] bg-white px-3 py-2.5 text-sm text-[#382a26] outline-none transition placeholder:text-gray-400 focus:border-[#a66b20] focus:ring-2 focus:ring-[#f4c35e]/20';
 
 export default function CheckoutPage() {
-  const { items, itemCount, subtotal, savings } = useStoreCart();
+  const { items, itemCount, subtotal, savings, clearCart, isLoading: cartLoading, error: cartError } = useStoreCart();
   const { user } = useAuth();
   const [checkoutStep, setCheckoutStep] = useState(1);
   const [delivery, setDelivery] = useState<DeliveryOption>('standard');
   const [payment, setPayment] = useState<PaymentOption>('contact');
   const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<{ orderNumber: string } | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
-  const [checkoutFields, setCheckoutFields] = useState({
+  const [checkoutFields, setCheckoutFields] = useState<CheckoutFields>({
     fullName: '',
     phone: '',
     email: '',
@@ -38,13 +61,53 @@ export default function CheckoutPage() {
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (!user) return;
-    setCheckoutFields((current) => ({
-      ...current,
-      fullName: current.fullName || user.username || '',
-      phone: current.phone || user.phone || '',
-      email: current.email || user.email || '',
-    }));
+    if (!user) {
+      setSavedAddresses([]);
+      setSelectedAddressId(null);
+      return;
+    }
+    let active = true;
+    setAddressLoading(true);
+    api.get<{ addresses: SavedAddress[] }>('/addresses')
+      .then(({ data }) => {
+        if (!active) return;
+        const addresses = data.addresses || [];
+        setSavedAddresses(addresses);
+        const address = addresses.find((item) => item.isDefault) || addresses[0];
+        if (address) {
+          setSelectedAddressId(address.id);
+          setCheckoutFields({
+            fullName: address.fullName,
+            phone: address.phone,
+            email: address.email,
+            addressLine1: address.addressLine1,
+            addressLine2: address.addressLine2 || '',
+            pincode: address.pincode,
+            city: address.city,
+            state: address.state,
+          });
+        } else {
+          setCheckoutFields((current) => ({
+            ...current,
+            fullName: current.fullName || user.username || '',
+            phone: current.phone || user.phone || '',
+            email: current.email || user.email || '',
+          }));
+        }
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        console.error('Could not load saved addresses:', error);
+        setSubmitError(isAxiosError(error)
+          ? error.response?.data?.message || 'Could not load your saved addresses.'
+          : 'Could not load your saved addresses.');
+      })
+      .finally(() => {
+        if (active) setAddressLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   const updateAddressField = (event: ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +177,7 @@ export default function CheckoutPage() {
         phone: current.phone,
         email: current.email,
       }));
+      setSelectedAddressId(null);
       setLocationMessage('Address found. Please review it and fill in any missing details before continuing.');
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'number') {
@@ -131,39 +195,71 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const address = [
-      checkoutFields.addressLine1.trim(),
-      checkoutFields.addressLine2.trim(),
-      `${checkoutFields.city.trim()}, ${checkoutFields.state.trim()} ${checkoutFields.pincode.trim()}`,
-    ].filter(Boolean).join('\n');
-    const orderLines = items.map(({ product, quantity }) => {
-      const price = product.offerPrice > 0 ? product.offerPrice : product.price;
-      return `${product.name} (${product.id}) × ${quantity} — ${formatPrice(price * quantity)}`;
+  const selectSavedAddress = (event: ChangeEvent<HTMLSelectElement>) => {
+    const id = Number(event.currentTarget.value);
+    if (!id) {
+      setSelectedAddressId(null);
+      return;
+    }
+    const address = savedAddresses.find((item) => item.id === id);
+    if (!address) return;
+    setSelectedAddressId(address.id);
+    setCheckoutFields({
+      fullName: address.fullName,
+      phone: address.phone,
+      email: address.email,
+      addressLine1: address.addressLine1,
+      addressLine2: address.addressLine2 || '',
+      pincode: address.pincode,
+      city: address.city,
+      state: address.state,
     });
-    const subject = `Jewellery order request from ${checkoutFields.fullName.trim()}`;
-    const body = [
-      `Customer: ${checkoutFields.fullName.trim()}`,
-      `Phone: ${checkoutFields.phone.trim()}`,
-      `Email: ${checkoutFields.email.trim()}`,
-      '',
-      'Delivery address:',
-      address,
-      '',
-      `Delivery preference: ${delivery === 'standard' ? 'Standard delivery' : 'Express delivery (availability and charge to be confirmed)'}`,
-      `Payment preference: ${payment === 'cod' ? 'Cash on delivery (subject to confirmation)' : 'Please contact me to arrange payment'}`,
-      '',
-      'Items:',
-      ...orderLines,
-      '',
-      `Subtotal: ${formatPrice(subtotal + savings)}`,
-      `Discount: ${formatPrice(savings)}`,
-      `Total before any confirmed taxes or delivery charges: ${formatPrice(subtotal)}`,
-    ].join('\n');
+  };
 
-    setSubmitMessage('Your email app should open with the order request ready to send. Your cart will remain saved until the order is confirmed.');
-    window.location.href = `mailto:support@kanakgold.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!user) {
+      setSubmitError('Please sign in before placing your order.');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitMessage('');
+
+    try {
+      const addressPayload = {
+        ...checkoutFields,
+        isDefault: selectedAddressId != null
+          && savedAddresses.find((address) => address.id === selectedAddressId)?.isDefault === true,
+      };
+      const addressResponse = selectedAddressId
+        ? await api.put<{ address: SavedAddress }>(`/addresses/${selectedAddressId}`, addressPayload)
+        : await api.post<{ address: SavedAddress }>('/addresses', addressPayload);
+      const addressId = addressResponse.data.address.id;
+
+      await api.put('/cart', {
+        items: items.map(({ product, quantity }) => ({
+          productId: product.id,
+          quantity,
+        })),
+      });
+      const { data } = await api.post<{ order: { orderNumber: string } }>('/orders', {
+        addressId,
+        deliveryOption: delivery,
+        paymentMethod: payment,
+      });
+
+      setCompletedOrder({ orderNumber: data.order.orderNumber });
+      setSubmitMessage(`Order ${data.order.orderNumber} was placed successfully.`);
+      clearCart();
+    } catch (error: unknown) {
+      console.error('Could not place order:', error);
+      setSubmitError(isAxiosError(error)
+        ? error.response?.data?.message || 'Could not place your order. Please try again.'
+        : 'Could not place your order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const continueCheckout = () => {
@@ -179,13 +275,36 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (completedOrder) {
+    return (
+      <div className="min-h-screen bg-[#fffdf8] text-[#381413]">
+        <PageHeader breadcrumb="Order placed" title="Thank you" description="Your order has been saved." className="flex h-[300px] items-center" contentClassName="py-4" titleClassName="text-4xl sm:text-5xl" />
+        <section className="mx-auto flex max-w-xl flex-col items-center px-4 py-16 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-800"><ShieldCheck className="h-8 w-8" /></span>
+          <h2 className="mt-5 font-serif text-2xl font-bold text-[#5a1112]">Order placed successfully</h2>
+          <p className="mt-2 text-sm text-gray-600">Your order number is <strong>{completedOrder.orderNumber}</strong>. The shop team will contact you to confirm your order.</p>
+          <Link to="/shop" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#74180f] px-5 py-3 text-sm font-bold text-white hover:bg-[#5a1112]">Continue shopping <ArrowRight className="h-4 w-4" /></Link>
+        </section>
+      </div>
+    );
+  }
+
+  if (cartLoading) {
+    return (
+      <div className="min-h-screen bg-[#fffdf8] text-[#381413]">
+        <PageHeader breadcrumb="Checkout" title="Checkout" description="Loading your cart." className="flex h-[300px] items-center" contentClassName="py-4" titleClassName="text-4xl sm:text-5xl" />
+        <p role="status" className="mx-auto max-w-xl px-4 py-16 text-center text-sm text-gray-600">Loading your cart…</p>
+      </div>
+    );
+  }
+
   if (!items.length) {
     return (
       <div className="min-h-screen bg-[#fffdf8] text-[#381413]">
         <PageHeader breadcrumb="Checkout" title="Checkout" description="Complete your delivery details to request your order." className="flex h-[300px] items-center" contentClassName="py-4" titleClassName="text-4xl sm:text-5xl" />
         <section className="mx-auto flex max-w-xl flex-col items-center px-4 py-16 text-center">
-          <h2 className="font-serif text-2xl font-bold text-[#5a1112]">Your cart is empty</h2>
-          <p className="mt-2 text-sm text-gray-600">Add jewellery to your cart before continuing to checkout.</p>
+          <h2 className="font-serif text-2xl font-bold text-[#5a1112]">{cartError ? 'Your cart could not be loaded' : 'Your cart is empty'}</h2>
+          <p className="mt-2 text-sm text-gray-600">{cartError || 'Add jewellery to your cart before continuing to checkout.'}</p>
           <Link to="/shop" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#74180f] px-5 py-3 text-sm font-bold text-white hover:bg-[#5a1112]">Explore jewellery <ArrowRight className="h-4 w-4" /></Link>
         </section>
       </div>
@@ -235,6 +354,26 @@ export default function CheckoutPage() {
                 <MapPin className="h-4 w-4" />{locationLoading ? 'Finding your location…' : 'Use my live location'}
               </button>
               </div>
+              {user && savedAddresses.length > 0 && (
+                <label className="mb-4 block text-xs font-semibold text-[#4a3029]">
+                  Use a saved address
+                  <select
+                    value={selectedAddressId ?? ''}
+                    onChange={selectSavedAddress}
+                    disabled={addressLoading}
+                    className={fieldClassName}
+                  >
+                    <option value="">Enter a new address</option>
+                    {savedAddresses.map((address) => (
+                      <option key={address.id} value={address.id}>
+                        {address.fullName} — {address.addressLine1}, {address.city}
+                        {address.isDefault ? ' (Default)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {addressLoading && <p role="status" className="mb-3 text-xs text-gray-500">Loading saved addresses…</p>}
               {locationMessage && <p role="status" aria-live="polite" className="mb-4 rounded-md bg-[#fff8ec] px-3 py-2 text-xs leading-5 text-[#5a1112]">{locationMessage}</p>}
               <p className="mb-4 text-[10px] leading-4 text-gray-500">When you request an address lookup, your browser shares your location with <a href="https://www.openstreetmap.org/" target="_blank" rel="noreferrer" className="font-semibold text-[#74180f] underline">OpenStreetMap</a>. Review the filled address before using it.</p>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -311,7 +450,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 text-xs leading-5 text-gray-600">Sending this request does not take payment or finalize the purchase. Our team will confirm item availability, final charges, delivery, and payment.</p>
+                <p className="mt-4 text-xs leading-5 text-gray-600">Placing the order records it in your account and reserves the available stock. No payment is collected on this page.</p>
               </section>
             )}
 
@@ -350,10 +489,12 @@ export default function CheckoutPage() {
             </div>
             <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-[#fff8ec] p-3"><span className="font-serif text-sm font-bold text-[#5a1112]">Estimated total</span><span className="text-lg font-extrabold text-[#74180f]">{formatPrice(subtotal)}</span></div>
             <p className="mt-2 text-right text-[10px] leading-4 text-gray-500">Final taxes and delivery charges, if any, are confirmed before purchase.</p>
-            <div className="mt-4 rounded-lg bg-emerald-50 p-3 text-[10px] leading-4 text-emerald-900"><p className="flex items-center gap-2 font-bold"><ShieldCheck className="h-4 w-4 shrink-0" /> Secure order request</p><p className="mt-1">This sends your order details to our team by email. No payment is taken now.</p></div>
-            {checkoutStep === 3 && <button type="submit" className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#74180f] px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#5a1112]"><LockKeyhole className="h-4 w-4" /> Send Order Request <ArrowRight className="h-4 w-4" /></button>}
+            <div className="mt-4 rounded-lg bg-emerald-50 p-3 text-[10px] leading-4 text-emerald-900"><p className="flex items-center gap-2 font-bold"><ShieldCheck className="h-4 w-4 shrink-0" /> Secure order</p><p className="mt-1">Your saved cart and delivery address will be submitted to the shop. No payment is taken now.</p></div>
+            {checkoutStep === 3 && !user && <p className="mt-4 rounded-lg bg-[#fff8ec] p-3 text-xs leading-5 text-[#5a1112]">Please <Link to="/login" className="font-bold underline">sign in</Link> to save your address and place this order.</p>}
+            {checkoutStep === 3 && <button type="submit" disabled={!user || submitting} className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#74180f] px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#5a1112] disabled:cursor-not-allowed disabled:opacity-60"><LockKeyhole className="h-4 w-4" /> {submitting ? 'Placing order…' : 'Place Order'} {!submitting && <ArrowRight className="h-4 w-4" />}</button>}
+            {submitError && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-xs leading-5 text-red-800">{submitError}</p>}
             {submitMessage && <p role="status" className="mt-3 text-xs leading-5 text-[#5a1112]">{submitMessage}</p>}
-            <p className="mt-3 text-center text-[10px] leading-4 text-gray-500">This is an order request, not a completed purchase. Our team will confirm availability, delivery charges, taxes, and payment before your order is finalized.</p>
+            <p className="mt-3 text-center text-[10px] leading-4 text-gray-500">Order placement checks current prices and available stock. Taxes, delivery charges, and payment are confirmed by the shop team.</p>
           </aside>
         </form>
         <Link to="/cart" className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-[#74180f] hover:text-[#ad7929]"><ArrowLeft className="h-4 w-4" /> Return to cart</Link>

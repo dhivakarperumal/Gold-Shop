@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { StoreCartProvider } from "./context/StoreCartProvider";
 import { DataProvider } from "./context/DataContext";
 import { MainLayout } from "./components/Layout/MainLayout";
 import { Login } from "./Auth/Login";
@@ -41,6 +42,7 @@ import OffersPage from "./pages/OffersPage";
 import ContactPage from "./pages/ContactPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import AccountPage from "./pages/AccountPage";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -55,6 +57,14 @@ const router = createBrowserRouter([
       { path: "contact", element: <ContactPage /> },
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
+      {
+        path: "account",
+        element: (
+          <PrivateRoute allowedRoles={["admin", "user"]}>
+            <AccountPage />
+          </PrivateRoute>
+        )
+      },
       { path: "product/:id", element: <ProductDetails /> }
     ]
   },
@@ -122,12 +132,14 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <DataProvider>
-        <Toaster />
-        <React.Suspense fallback={<Loader />}>
-          <RouterProvider router={router} />
-        </React.Suspense>
-      </DataProvider>
+      <StoreCartProvider>
+        <DataProvider>
+          <Toaster />
+          <React.Suspense fallback={<Loader />}>
+            <RouterProvider router={router} />
+          </React.Suspense>
+        </DataProvider>
+      </StoreCartProvider>
     </AuthProvider>
   </StrictMode>
 );

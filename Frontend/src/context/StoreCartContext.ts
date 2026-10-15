@@ -23,9 +23,12 @@ export interface StoreCartContextValue {
   itemCount: number;
   subtotal: number;
   savings: number;
-  addItem: (product: CartProduct, quantity?: number) => boolean;
-  updateQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  isLoading: boolean;
+  error: string;
+  addItem: (product: CartProduct, quantity?: number) => Promise<boolean>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  clearCart: () => void;
 }
 
 export const StoreCartContext = createContext<StoreCartContextValue | null>(null);

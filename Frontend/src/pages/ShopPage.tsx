@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, ShoppingCart, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
 import type { Product } from '../components/CommonComponents/ProductCard';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
-import { categories as storeCategories } from '../lib/categoryData';
+import type { Category } from '../lib/categoryData';
 import type { CartProduct } from '../context/StoreCartContext';
 import { useStoreCart } from '../context/useStoreCart';
 
@@ -17,6 +17,7 @@ type CatalogProduct = Product & {
 
 type Filters = {
   categories: string[];
+  subCategories: string[];
   purities: string[];
   genders: string[];
   occasions: string[];
@@ -25,6 +26,7 @@ type Filters = {
 
 const emptyFilters: Filters = {
   categories: [],
+  subCategories: [],
   purities: [],
   genders: [],
   occasions: [],
@@ -93,8 +95,10 @@ function FilterGroup({
 }
 
 function ShopPage() {
-  const { addItem } = useStoreCart();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { addItem, error: cartError } = useStoreCart();
   const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -104,6 +108,15 @@ function ShopPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
   const pageSize = 12;
+  const selectedCategory = searchParams.get('category');
+  const selectedSubCategory = searchParams.get('subCategory');
+  const activeFilters = useMemo(() => selectedCategory || selectedSubCategory
+    ? {
+        ...filters,
+        categories: selectedCategory ? [selectedCategory] : [],
+        subCategories: selectedSubCategory ? [selectedSubCategory] : [],
+      }
+    : filters, [filters, selectedCategory, selectedSubCategory]);
 
   useEffect(() => {
     let mounted = true;
@@ -128,10 +141,28 @@ function ShopPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    api.get<{ categories?: Category[] }>('/categories')
+      .then(({ data }) => {
+        if (!mounted) return;
+        setCategories(Array.isArray(data?.categories)
+          ? data.categories.filter((category) => category.status !== 'Inactive' && typeof category.categoryName === 'string')
+          : []);
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load shop categories:', error);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const categoryNames = useMemo(() => [...new Set([
     ...products.map((product) => product.category).filter(Boolean),
-    ...storeCategories.map((category) => category.categoryName),
-  ])], [products]);
+    ...categories.map((category) => category.categoryName),
+  ])], [products, categories]);
 
   const categoryCards = categoryNames.slice(0, 9).map((name, index) => ({
     name,
@@ -147,11 +178,12 @@ function ShopPage() {
 
   const filteredProducts = useMemo(() => {
     const matches = products.filter((product) => {
-      if (filters.categories.length && !filters.categories.includes(product.category)) return false;
-      if (filters.purities.length && !filters.purities.includes(product.purity)) return false;
-      if (filters.genders.length && !filters.genders.includes(product.gender || '')) return false;
-      if (filters.occasions.length && !filters.occasions.some((occasion) => normalizedList(product.occasion).includes(occasion))) return false;
-      if (filters.inStockOnly && product.stock <= 0) return false;
+      if (activeFilters.categories.length && !activeFilters.categories.includes(product.category)) return false;
+      if (activeFilters.subCategories.length && !activeFilters.subCategories.includes(product.subCategory)) return false;
+      if (activeFilters.purities.length && !activeFilters.purities.includes(product.purity)) return false;
+      if (activeFilters.genders.length && !activeFilters.genders.includes(product.gender || '')) return false;
+      if (activeFilters.occasions.length && !activeFilters.occasions.some((occasion) => normalizedList(product.occasion).includes(occasion))) return false;
+      if (activeFilters.inStockOnly && product.stock <= 0) return false;
       return priceOf(product) <= maximumPrice;
     });
 
@@ -161,22 +193,32 @@ function ShopPage() {
       if (sort === 'bestseller') return Number(b.bestSeller) - Number(a.bestSeller);
       return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
     });
-  }, [products, filters, maximumPrice, sort]);
+  }, [products, activeFilters, maximumPrice, sort]);
 
   const pageCount = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
   const visibleProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
-  const toggleFilter = (key: 'categories' | 'purities' | 'genders' | 'occasions', value: string) => {
+  const toggleFilter = (key: 'categories' | 'subCategories' | 'purities' | 'genders' | 'occasions', value: string) => {
     setPage(1);
-    setFilters((current) => ({
-      ...current,
-      [key]: current[key].includes(value)
-        ? current[key].filter((item) => item !== value)
-        : [...current[key], value],
-    }));
+    if (key === 'categories' || key === 'subCategories') {
+      setSearchParams({}, { replace: true });
+    }
+    setFilters((current) => {
+      const selectedItems = key === 'categories' || key === 'subCategories'
+        ? activeFilters[key]
+        : current[key];
+      return {
+        ...current,
+        [key]: selectedItems.includes(value)
+          ? selectedItems.filter((item) => item !== value)
+          : [...selectedItems, value],
+        ...(key === 'categories' ? { subCategories: [] } : {}),
+      };
+    });
   };
 
   const clearFilters = () => {
+    setSearchParams({}, { replace: true });
     setFilters(emptyFilters);
     setMaximumPrice(Math.max(0, ...products.map(priceOf)));
     setPage(1);
@@ -201,9 +243,21 @@ function ShopPage() {
       <FilterGroup
         title="Category"
         items={categoryNames}
-        selectedItems={filters.categories}
+        selectedItems={activeFilters.categories}
         onToggle={(item) => toggleFilter('categories', item)}
         counts={Object.fromEntries(categoryNames.map((name) => [name, products.filter((product) => product.category === name).length]))}
+      />
+
+      <FilterGroup
+        title="Subcategory"
+        items={[...new Set([
+          ...categories
+            .filter((category) => !filters.categories.length || filters.categories.includes(category.categoryName))
+            .flatMap((category) => category.subCategories),
+          ...products.map((product) => product.subCategory).filter(Boolean),
+        ])]}
+        selectedItems={activeFilters.subCategories}
+        onToggle={(item) => toggleFilter('subCategories', item)}
       />
 
       <div className="border-b border-[#eadbc9] py-3">
@@ -234,7 +288,7 @@ function ShopPage() {
       <label className="flex cursor-pointer items-center gap-2 pt-3 text-xs text-gray-600">
         <input
           type="checkbox"
-          checked={filters.inStockOnly}
+          checked={activeFilters.inStockOnly}
           onChange={(event) => {
             setFilters((current) => ({ ...current, inStockOnly: event.target.checked }));
             setPage(1);
@@ -265,13 +319,15 @@ function ShopPage() {
               key={name}
               type="button"
               onClick={() => {
+                setSearchParams({}, { replace: true });
                 setFilters((current) => ({
                   ...current,
-                  categories: current.categories.includes(name) ? [] : [name],
+                  categories: activeFilters.categories.includes(name) ? [] : [name],
+                  subCategories: [],
                 }));
                 setPage(1);
               }}
-              className={`rounded-lg border p-2 text-center transition hover:border-[#d69a2d] ${filters.categories.includes(name) ? 'border-[#74180f] bg-[#fff5df]' : 'border-[#f0e6d9] bg-white'}`}
+              className={`rounded-lg border p-2 text-center transition hover:border-[#d69a2d] ${activeFilters.categories.includes(name) ? 'border-[#74180f] bg-[#fff5df]' : 'border-[#f0e6d9] bg-white'}`}
             >
               <span className="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#fff8ed] sm:h-16 sm:w-16">
                 <img src={product ? productImage(product) || fallback : fallback} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -362,7 +418,7 @@ function ShopPage() {
                           <button
                             type="button"
                             aria-label={`Add ${product.name} to cart`}
-                            onClick={() => {
+                            onClick={async () => {
                               const cartProduct: CartProduct = {
                                 id: product.productId,
                                 name: product.name,
@@ -375,7 +431,7 @@ function ShopPage() {
                                 stock: Number(product.stock) || 0,
                                 image: image || imageAsset(1),
                               };
-                              setCartMessage(addItem(cartProduct)
+                              setCartMessage(await addItem(cartProduct)
                                 ? `${product.name} added to your cart.`
                                 : `${product.name} is out of stock or at its available quantity limit.`);
                             }}
@@ -400,7 +456,7 @@ function ShopPage() {
               </div>
             )}
 
-            {cartMessage && <p role="status" className="mt-3 text-xs font-semibold text-[#5a1112]">{cartMessage}</p>}
+            {(cartError || cartMessage) && <p role={cartError ? 'alert' : 'status'} className="mt-3 text-xs font-semibold text-[#5a1112]">{cartError || cartMessage}</p>}
 
             {!loading && filteredProducts.length > pageSize && (
               <nav aria-label="Shop pages" className="mt-5 flex items-center justify-center gap-1">

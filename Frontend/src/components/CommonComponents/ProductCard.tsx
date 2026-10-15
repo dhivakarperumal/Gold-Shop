@@ -39,7 +39,7 @@ interface ProductCardProps {
 export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWishlist }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
-  const { addItem } = useStoreCart();
+  const { addItem, error: cartError } = useStoreCart();
   const isWished = wishlist.has(product.productId);
   const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
 
@@ -66,7 +66,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
     if (toggleWishlist) toggleWishlist(product.productId);
   };
 
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const cartProduct: CartProduct = {
@@ -81,7 +81,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
       stock: Number(product.stock) || 0,
       image: imgSrc || '',
     };
-    setCartMessage(addItem(cartProduct)
+    setCartMessage(await addItem(cartProduct)
       ? `${product.name} added to your cart.`
       : `${product.name} is out of stock or at its available quantity limit.`);
   };
@@ -170,7 +170,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
       {/* Card Content */}
       <div className="p-4 space-y-2.5">
-        {cartMessage && <span role="status" className="sr-only">{cartMessage}</span>}
+        {(cartError || cartMessage) && <span role={cartError ? 'alert' : 'status'} className="sr-only">{cartError || cartMessage}</span>}
         {/* Category */}
         <p className="text-[10px] font-bold text-[#1b88f3] uppercase tracking-[0.15em]">
           {product.category} {product.subCategory ? `· ${product.subCategory}` : ''}
