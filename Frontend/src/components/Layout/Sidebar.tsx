@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video } from 'lucide-react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -62,7 +62,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span className="font-bold text-sm text-white truncate">Kanak Gold</span>
             </div>
           </div>
-          
+
           <button 
             className="lg:hidden absolute top-2 right-2 p-1 rounded-md text-white/70 hover:bg-white/10"
             onClick={onClose}
@@ -221,10 +221,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             )}
           </nav>
         </div>
-
-        {/* Bottom Logo */}
-        <div className="p-6 bg-[#3f0b0c] flex items-center justify-start">
-            <span className="font-bold text-2xl text-amber-50 tracking-tighter">KanakGold</span>
+        {/* Signed-in user and storefront link */}
+        <div className="border-t border-white/10 bg-[#3f0b0c] p-4">
+          <Link
+            to="/"
+            onClick={onClose}
+            className="mb-3 flex items-center gap-3 rounded-lg border border-white/15 px-3 py-2.5 text-sm font-semibold text-[#f8e8c1] transition-colors hover:border-[#f3d36a]/50 hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back Home
+          </Link>
+          <div className="flex min-w-0 items-center gap-3 px-2 pt-1">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d9a441] text-sm font-bold uppercase text-[#35110c]">
+              {user?.username?.trim().charAt(0) || user?.email?.trim().charAt(0) || '?'}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">{user?.username || 'Signed in user'}</p>
+              <p className="truncate text-xs text-[#f8e8c1]/75">{user?.email || 'No email available'}</p>
+            </div>
+          </div>
         </div>
       </aside>
     </>
