@@ -6,10 +6,10 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../../api';
-import { ProductCard } from '../CommonComponents/ProductCard';
 import PageContainer from '../CommonComponents/PageContainer.jsx';
-import { categories as storeCategories } from '../../lib/categoryData';
+import Category from './Categeory/Category.jsx';
 import Hero from './Hero/Hero.jsx';
+import Products from './Products/Products.jsx';
 
 const imageAsset = (number) => `/Gold Shop Images/shopping (${number}).webp`;
 
@@ -17,18 +17,6 @@ function resolveImageUrl(image) {
   if (!image) return '';
   if (/^(https?:|data:|blob:)/i.test(image) || image.startsWith('/Gold Shop Images/')) return image;
   return `${BACKEND_BASE_URL}${image.startsWith('/') ? image : `/${image}`}`;
-}
-
-function getProductImage(product) {
-  let images = product?.images;
-  if (typeof images === 'string') {
-    try {
-      images = JSON.parse(images);
-    } catch {
-      images = [images];
-    }
-  }
-  return resolveImageUrl(Array.isArray(images) ? images[0] : '');
 }
 
 function SectionHeading({ eyebrow, title, description }) {
@@ -43,6 +31,7 @@ function SectionHeading({ eyebrow, title, description }) {
 
 function HomePage() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -58,6 +47,17 @@ function HomePage() {
       })
       .finally(() => setLoading(false));
 
+    api.get('/categories')
+      .then(({ data }) => {
+        const fetchedCategories = Array.isArray(data?.categories) ? data.categories : [];
+        setCategories(fetchedCategories.filter((category) => (
+          category.status !== 'Inactive' && typeof category.categoryName === 'string'
+        )));
+      })
+      .catch((error) => {
+        console.error('Failed to load storefront categories:', error);
+      });
+
     api.get('/banners')
       .then(({ data }) => {
         setOffers((Array.isArray(data?.data) ? data.data : [])
@@ -69,8 +69,8 @@ function HomePage() {
   }, []);
 
   const categoryNames = [...new Set([
+    ...categories.map((category) => category.categoryName),
     ...products.map((product) => product.category),
-    ...storeCategories.map((category) => category.categoryName),
   ].filter(Boolean))];
   const visibleProducts = activeCategory === 'All'
     ? products
@@ -80,12 +80,6 @@ function HomePage() {
     ? featuredProducts
     : featuredProducts.filter((product) => product.category === activeCategory);
   const displayProducts = (filteredFeaturedProducts.length ? filteredFeaturedProducts : visibleProducts).slice(0, 6);
-  const categoryProducts = categoryNames.slice(0, 8).map((name, index) => ({
-    name,
-    product: products.find((product) => product.category === name),
-    fallbackImage: imageAsset(index + 1),
-  }));
-
   const handleNewsletterSubmit = (event) => {
     event.preventDefault();
     const subject = encodeURIComponent('Newsletter subscription request');
@@ -149,32 +143,14 @@ function HomePage() {
         </PageContainer>
       </section>
 
-      <section className="py-10 sm:py-12">
-        <PageContainer>
-          <SectionHeading eyebrow="Find Your Style" title="Shop by Category" description="Explore our jewellery collections, crafted for every occasion." />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-            {categoryProducts.map(({ name, product, fallbackImage }) => {
-              const image = getProductImage(product) || fallbackImage;
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => {
-                    setActiveCategory(name);
-                    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="group text-center"
-                >
-                  <span className="mx-auto block aspect-square overflow-hidden rounded-full border border-brand-100 bg-brand-50 p-1 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
-                    <img src={image} alt="" className="h-full w-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
-                  </span>
-                  <span className="mt-2 block text-[11px] font-semibold text-primary sm:text-xs">{name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </PageContainer>
-      </section>
+      <Category
+        categories={categories}
+        products={products}
+        onSelectCategory={(category) => {
+          setActiveCategory(category);
+          document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
 
       <section className="pb-10">
         <PageContainer className="grid gap-3 md:grid-cols-3">
@@ -199,42 +175,13 @@ function HomePage() {
         </PageContainer>
       </section>
 
-      <section id="products" className="scroll-mt-28 py-10 sm:py-14">
-        <PageContainer>
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <div>
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.25em] text-secondary">Handpicked for you</p>
-              <h2 className="font-serif text-2xl font-bold text-primary sm:text-3xl">Featured Jewellery</h2>
-            </div>
-            <a href="#products" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent px-4 py-2 text-[10px] font-bold text-primary sm:text-xs">
-              View All <ArrowRight className="h-3.5 w-3.5" />
-            </a>
-          </div>
-          <div className="mb-5 flex gap-2 overflow-x-auto pb-2">
-            {['All', ...categoryNames].map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setActiveCategory(category)}
-                className={`shrink-0 rounded-full px-4 py-2 text-[10px] font-semibold transition-colors sm:text-xs ${activeCategory === category ? 'bg-[#74180f] text-white' : 'bg-white text-gray-600 ring-1 ring-brand-100 hover:text-secondary-dark'}`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-          {loading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-              {[...Array(6)].map((_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
-            </div>
-          ) : displayProducts.length ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-              {displayProducts.map((product, index) => <ProductCard key={product.productId} product={product} index={index} />)}
-            </div>
-          ) : (
-            <div className="rounded-xl border border-brand-100 bg-white py-12 text-center text-sm text-gray-500">New jewellery is being added to this collection.</div>
-          )}
-        </PageContainer>
-      </section>
+      <Products
+        categories={categoryNames}
+        activeCategory={activeCategory}
+        onSelectCategory={setActiveCategory}
+        products={displayProducts}
+        loading={loading}
+      />
 
       <section className="py-5 sm:py-8">
         <PageContainer>
