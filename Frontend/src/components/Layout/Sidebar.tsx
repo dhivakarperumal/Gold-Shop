@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video, ClipboardList, Truck, Ban } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Users, Coins, Briefcase, BarChart3, X, Wallet, Gem, Package, ChevronDown, Layers, List, PlusCircle, Archive, Megaphone, Image as ImageIcon, Video, ClipboardList, Truck, Ban, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
@@ -24,6 +24,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['admin', 'user'], end: true },
     { name: 'Customers', path: '/admin/customers', icon: Users, roles: ['admin'], end: true },
+    { name: 'Enquiry', path: '/contact', icon: MessageCircle, roles: ['admin'], end: true },
     { name: 'Loans', path: '/admin/loans', icon: Coins, roles: ['admin', 'user'], end: true },
     { name: 'Gold Return', path: '/admin/loans?mode=return', icon: Gem, roles: ['admin', 'user'], end: true },
     { name: 'Payments', path: '/admin/payments', icon: Wallet, roles: ['admin', 'user'], end: true },

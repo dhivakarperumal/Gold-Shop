@@ -170,29 +170,29 @@ export function Header({ onMenuClick }: HeaderProps) {
               onClick={() => setIsProfileOpen(false)}
             ></div>
             
-            <div className="absolute right-0 mt-2 w-[220px] bg-red-600 rounded-md shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-200 z-50 py-1 overflow-hidden transform origin-top-right animate-in fade-in zoom-in duration-150">
+            <div className="absolute right-0 mt-2 w-[220px] bg-[#5a1112] rounded-md shadow-[0_4px_20px_-4px_rgba(0,0,0,0.25)] border border-[#7a3b2a] z-50 py-1 overflow-hidden transform origin-top-right animate-in fade-in zoom-in duration-150">
               <div className="px-4 py-2.5">
-                <p className="text-[13px] font-bold text-gray-900">{user?.username || 'Account'} - My Account</p>
+                <p className="text-[13px] font-bold text-[#f8e8c1]">{user?.username || 'Account'} - My Account</p>
               </div>
               
-              <div className="h-px bg-gray-100"></div>
+              <div className="h-px bg-white/15"></div>
               
               <div className="py-1">
-                <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors" onClick={() => setIsProfileOpen(false)}>
+                <button className="w-full text-left px-4 py-2 text-sm text-[#f8e8c1] hover:bg-white/10 transition-colors" onClick={() => setIsProfileOpen(false)}>
                   Profile
                 </button>
                 <NavLink 
                   to="/settings"
                   onClick={() => setIsProfileOpen(false)}
                   className={({ isActive }) => 
-                    `block px-4 py-2 text-sm transition-colors mx-1 rounded ${isActive ? 'bg-[#1b64f3] text-white font-medium' : 'text-gray-700 hover:bg-gray-50'}`
+                    `block px-4 py-2 text-sm transition-colors mx-1 rounded ${isActive ? 'bg-[#d9a441] text-[#35110c] font-medium' : 'text-[#f8e8c1] hover:bg-white/10'}`
                   }
                 >
                   Settings
                 </NavLink>
               </div>
               
-              <div className="h-px bg-gray-100"></div>
+              <div className="h-px bg-white/15"></div>
               
               <div className="py-1">
                 <button 
@@ -200,7 +200,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     setIsProfileOpen(false);
                     logout();
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm text-[#f3c64e] hover:bg-white/10 transition-colors"
                 >
                   Logout
                 </button>
