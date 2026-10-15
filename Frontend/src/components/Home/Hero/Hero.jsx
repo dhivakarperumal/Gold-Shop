@@ -23,7 +23,6 @@ function resolveBannerImage(image) {
 export default function Hero() {
   const [banners, setBanners] = useState([fallbackBanner]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -47,14 +46,14 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    if (banners.length < 2 || isPaused) return undefined;
+    if (banners.length < 2) return undefined;
 
     const timer = window.setInterval(() => {
       setActiveIndex((index) => (index + 1) % banners.length);
     }, 5000);
 
     return () => window.clearInterval(timer);
-  }, [banners.length, isPaused]);
+  }, [banners.length]);
 
   const showSlide = (index) => {
     setActiveIndex((index + banners.length) % banners.length);
@@ -77,12 +76,6 @@ export default function Hero() {
       className="relative isolate overflow-hidden bg-brand-50"
       aria-roledescription="carousel"
       aria-label="Featured jewellery"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setIsPaused(false);
-      }}
     >
       {desktopImage && (
         <div key={content.id || content.title} className="absolute inset-0 -z-10 animate-[hero-fade-in_500ms_ease-out]">
@@ -98,7 +91,7 @@ export default function Hero() {
       )}
       <div className={`absolute inset-0 -z-0 ${desktopImage ? 'bg-gradient-to-r from-primary/85 via-primary/65 to-primary/10' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-200/60 via-brand-50 to-white'}`} />
 
-      <PageContainer className="relative z-10 grid min-h-[520px] items-center gap-10 py-20 lg:grid-cols-2">
+      <PageContainer className="relative z-10 grid min-h-[550px] items-center gap-10 py-20 lg:grid-cols-2">
         <div className={`space-y-7 text-center lg:text-left ${desktopImage ? 'text-white' : 'text-gray-900'}`}>
           <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wider ${desktopImage ? 'border-white/30 bg-white/10 text-white' : 'border-brand-200 bg-brand-100 text-secondary-dark'}`}>
             <Sparkles className="h-3.5 w-3.5" />
