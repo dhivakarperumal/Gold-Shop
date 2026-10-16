@@ -59,8 +59,8 @@ function About() {
               </p>
             </div>
             <img
-              src={image(21)}
-              alt="A customer admiring traditional gold jewellery"
+              src="/about-gold-bar.png"
+              alt="An eight-gram fine gold bar in its presentation case"
               className="h-64 w-full rounded-2xl object-cover shadow-lg sm:h-80 lg:h-[370px]"
             />
           </div>
