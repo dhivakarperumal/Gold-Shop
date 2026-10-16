@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Heart, Star, Sparkles, Gem, Eye, ShoppingBag, X } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Crown, ShieldCheck, Heart, Star, Gem, Eye, ShoppingCart, Truck, RotateCcw, Sparkles, Tag, TrendingUp, X } from 'lucide-react';
 import type { CartProduct } from '../../context/StoreCartContext';
 import { useStoreCart } from '../../context/useStoreCart';
 import { useWishlist } from '../../context/useWishlist';
@@ -20,6 +20,17 @@ export interface Product {
   offerPrice: number;
   discount: number;
   rating?: number;
+  reviewCount?: number;
+  certificate?: string;
+  shipping?: {
+    freeShipping?: boolean;
+    insuredShipping?: boolean;
+  };
+  returnPolicy?: {
+    returnAvailable?: boolean;
+    returnDays?: number;
+    exchangeAvailable?: boolean;
+  };
   stock: number;
   color: string;
   material: string;
@@ -68,6 +79,31 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist, show
   };
 
   const imgSrc = getProductImage(product);
+  const currentPrice = product.offerPrice > 0 ? product.offerPrice : product.price;
+  const hasDiscountedPrice = product.offerPrice > 0 && product.offerPrice < product.price;
+  const discountPercent = product.discount || (hasDiscountedPrice
+    ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
+    : 0);
+  const collectionBadge = showCollectionBadges
+    ? product.bestSeller
+      ? { label: 'Bestseller', className: 'bg-[#a20d19] text-white', Icon: Crown }
+      : product.newArrival
+        ? { label: 'New Arrival', className: 'bg-[#f6d17b] text-[#381413]', Icon: Sparkles }
+        : product.featured
+          ? { label: 'Trending', className: 'bg-[#087d32] text-white', Icon: TrendingUp }
+          : null
+    : null;
+  const shippingLabel = product.shipping?.freeShipping ? 'Free Shipping' : 'Insured Shipping';
+  const returnLabel = product.returnPolicy?.exchangeAvailable
+    ? 'Lifetime Exchange'
+    : product.returnPolicy?.returnAvailable
+      ? 'Easy Returns'
+      : 'Easy Support';
+  const returnDetail = product.returnPolicy?.returnAvailable && product.returnPolicy.returnDays
+    ? `${product.returnPolicy.returnDays}-Day Returns`
+    : product.returnPolicy?.exchangeAvailable
+      ? 'On eligible items'
+      : 'Contact our team';
 
   useEffect(() => {
     if (!isQuickViewOpen) return;
@@ -142,156 +178,170 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist, show
 
   return (
     <>
-    <Link
-      to={`/product/${product.productId}`}
-      className="group relative block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-amber-100/50 transition-all duration-500 hover:-translate-y-2"
+    <article
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-[#ead8bf] bg-[#fffdfa] shadow-[0_3px_12px_rgba(91,48,15,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_8px_22px_rgba(91,48,15,0.16)]"
       style={{ animationDelay: `${index * 80}ms` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-        {imgSrc ? (
-          <img
-            src={imgSrc}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Gem className="w-16 h-16 text-amber-300/60" />
+      <div className="relative aspect-[5/3] overflow-hidden bg-[#f7eee1]">
+        <Link to={`/product/${product.productId}`} aria-label={`View ${product.name}`} className="block h-full w-full">
+          {imgSrc ? (
+            <img
+              src={imgSrc}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Gem className="h-16 w-16 text-amber-300/60" />
+            </div>
+          )}
+        </Link>
+
+        {(collectionBadge || discountPercent > 0) && (
+          <div className="absolute left-2.5 top-2.5">
+            {collectionBadge ? (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm ${collectionBadge.className}`}>
+                <collectionBadge.Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                {collectionBadge.label}
+              </span>
+            ) : discountPercent > 0 ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#df1018] px-2.5 py-1 text-[10px] font-bold text-white shadow-sm">
+                <Tag className="h-3 w-3" aria-hidden="true" />
+                {discountPercent}% OFF
+              </span>
+            ) : null}
           </div>
         )}
 
-        {/* Overlay gradient on hover */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
-
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          {product.discount > 0 && (
-            <span className="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg tracking-wide">
-              {product.discount}% OFF
-            </span>
-          )}
-          {showCollectionBadges && product.newArrival && (
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg tracking-wide flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> NEW
-            </span>
-          )}
-          {showCollectionBadges && product.bestSeller && (
-            <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg tracking-wide flex items-center gap-1">
-              <Star className="w-3 h-3" /> BEST
-            </span>
-          )}
-        </div>
-
-        {/* Wishlist Button */}
         <button
           type="button"
           onClick={handleWishlist}
           aria-label={`${isWished ? 'Remove' : 'Add'} ${product.name} ${isWished ? 'from' : 'to'} wishlist`}
           aria-pressed={isWished}
-          className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-lg ${isWished
-              ? 'bg-red-500 text-white scale-110'
-              : 'bg-white/80 text-gray-500 hover:bg-red-50 hover:text-red-500'
-            }`}
+          className={`absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-[#7a1515] shadow-md transition hover:scale-105 hover:bg-red-50 sm:h-9 sm:w-9 ${isWished ? 'text-red-600' : ''}`}
         >
-          <Heart className={`w-4 h-4 ${isWished ? 'fill-current' : ''}`} />
+          <Heart className={`h-4 w-4 ${isWished ? 'fill-current' : ''}`} />
         </button>
 
-        {/* Quick Actions on Hover */}
-        <div className={`absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setIsQuickViewOpen(true);
-            }}
-            aria-label={`Quick view ${product.name}`}
-            className="flex-1 bg-[#5a1112] text-white text-xs font-bold py-2.5 rounded-xl hover:bg-[#ad7929] hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg"
-          >
-            <Eye className="w-3.5 h-3.5" /> Quick View
-          </button>
+        <button
+          type="button"
+          onClick={() => setIsQuickViewOpen(true)}
+          aria-label={`Quick view ${product.name}`}
+          className={`absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 rounded-md bg-[#5a1112]/95 px-3 py-2 text-[11px] font-bold text-white shadow transition-all hover:bg-[#ad7929] ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}
+        >
+          <Eye className="h-3.5 w-3.5" /> Quick View
+        </button>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 100 14"
+          preserveAspectRatio="none"
+          className="pointer-events-none absolute inset-x-0 bottom-[-1px] h-4 w-full"
+        >
+          <path d="M0 5 C18 9 31 13 48 8 C66 3 80 1 100 6 L100 14 L0 14 Z" fill="#fffdfa" />
+        </svg>
+      </div>
+
+      <div className="flex flex-1 flex-col px-3 py-2.5 sm:px-3.5">
+        {(cartError || wishlistError || cartMessage) && (
+          <span role={cartError || wishlistError ? 'alert' : 'status'} className="sr-only">
+            {cartError || wishlistError || cartMessage}
+          </span>
+        )}
+
+        <Link to={`/product/${product.productId}`} className="font-serif text-[14px] font-bold leading-5 text-[#191414] transition-colors hover:text-[#74180f] sm:text-[15px]">
+          <h3 className="line-clamp-1">{product.name}</h3>
+        </Link>
+
+        <p className="mt-0.5 truncate text-[11px] font-medium text-[#697080] sm:text-xs">
+          {[product.purity || product.material, product.weight > 0 ? `${product.weight} ${product.weightUnit || 'g'}` : '']
+            .filter(Boolean)
+            .join(' · ') || product.category}
+        </p>
+
+        {Number(product.rating) > 0 && (
+          <div className="mt-1 flex items-center gap-1 text-[11px]" aria-label={`Rated ${Number(product.rating).toFixed(1)} out of 5${product.reviewCount ? ` from ${product.reviewCount} reviews` : ''}`}>
+            <span className="flex items-center text-[#f28a00]" aria-hidden="true">
+              {Array.from({ length: 5 }, (_, starIndex) => {
+                const fillPercent = Math.min(100, Math.max(0, (Number(product.rating) - starIndex) * 100));
+                return (
+                 <span key={starIndex} className="relative h-3.5 w-3.5">
+                   <Star className="absolute inset-0 h-3.5 w-3.5 text-[#d5d0c8]" />
+                   <span className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - fillPercent}% 0 0)` }}>
+                     <Star className="h-3.5 w-3.5 fill-current text-[#f28a00]" />
+                   </span>
+                 </span>
+                );
+              })}
+            </span>
+            <span className="font-medium text-[#555b66]">{Number(product.rating).toFixed(1)}{product.reviewCount ? ` (${product.reviewCount})` : ''}</span>
+          </div>
+        )}
+
+        <div className="mt-1.5 flex min-h-7 items-center gap-1.5 overflow-hidden">
+          <span className="shrink-0 text-[17px] font-black leading-none text-[#74180f] sm:text-lg">{formatPrice(currentPrice)}</span>
+          {hasDiscountedPrice && (
+            <span className="truncate text-[10px] font-medium text-[#777] line-through sm:text-[11px]">
+              {formatPrice(product.price)}
+            </span>
+          )}
+          {discountPercent > 0 && (
+            <span className="ml-auto shrink-0 rounded-md bg-[#fde1df] px-1.5 py-1 text-[9px] font-bold text-[#ba1714] sm:px-2 sm:text-[10px]">
+              {discountPercent}% OFF
+            </span>
+          )}
+          {product.stock <= 0 && <span className="ml-auto shrink-0 text-[9px] font-bold text-red-600">Out of stock</span>}
+        </div>
+
+        <div className="mt-2 grid grid-cols-3 items-center gap-1 pt-1.5 text-[#34343a]">
+          <div className="flex min-w-0 items-center gap-1">
+            {product.hallmark || product.certificate ? (
+              <BadgeCheck className="h-4 w-4 shrink-0 text-[#242934]" />
+            ) : (
+              <ShieldCheck className="h-4 w-4 shrink-0 text-[#242934]" />
+            )}
+            <span className="min-w-0 text-[8px] leading-[1.15] sm:text-[9px]">
+              <span className="block font-semibold">{product.hallmark ? 'BIS' : product.certificate ? 'Certified' : 'Quality'}</span>
+              <span className="block truncate">{product.hallmark ? 'Hallmarked' : product.certificate || 'Assured'}</span>
+            </span>
+          </div>
+          <div className="flex min-w-0 items-center gap-1">
+            <Truck className="h-4 w-4 shrink-0 text-[#b84a13]" />
+            <span className="min-w-0 text-[8px] leading-[1.15] sm:text-[9px]">
+              <span className="block font-semibold">{shippingLabel.split(' ')[0]}</span>
+              <span className="block truncate">{shippingLabel.split(' ').slice(1).join(' ')}</span>
+            </span>
+          </div>
+          <div className="flex min-w-0 items-center gap-1">
+            <RotateCcw className="h-4 w-4 shrink-0 text-[#b84a13]" />
+            <span className="min-w-0 text-[8px] leading-[1.15] sm:text-[9px]">
+              <span className="block font-semibold">{returnLabel.split(' ')[0]}</span>
+              <span className="block truncate" title={returnDetail}>{returnLabel.split(' ').slice(1).join(' ') || returnDetail}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-2 grid grid-cols-[1.15fr_1fr] gap-1.5">
           <button
             type="button"
             aria-label={`Add ${product.name} to cart`}
             title={product.stock > 0 ? 'Add to cart' : 'Out of stock'}
             disabled={product.stock <= 0}
             onClick={handleAddToCart}
-            className="bg-[#5a1112] text-white p-2.5 rounded-xl hover:bg-[#74180f] transition-colors shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#8e0610] px-2 text-[10px] font-bold text-white shadow-sm transition hover:bg-[#74180f] disabled:cursor-not-allowed disabled:opacity-50 sm:text-[11px]"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
           </button>
+          <Link
+            to={`/product/${product.productId}`}
+            className="inline-flex h-9 items-center justify-center gap-1 rounded-full border border-[#e5b65e] bg-white px-2 text-[10px] font-bold text-[#35211e] shadow-sm transition hover:bg-[#fff6e8] sm:text-[11px]"
+          >
+            <span className="truncate">View Details</span><ArrowRight className="h-3 w-3 shrink-0" />
+          </Link>
         </div>
-
-        {/* Purity Tag */}
-        {product.purity && (
-          <div className={`absolute bottom-3 right-3 transition-all duration-300 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
-            <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider">
-              {product.purity}
-            </span>
-          </div>
-        )}
       </div>
-
-      {/* Card Content */}
-      <div className="p-4 space-y-2.5">
-        {(cartError || wishlistError || cartMessage) && <span role={cartError || wishlistError ? 'alert' : 'status'} className="sr-only">{cartError || wishlistError || cartMessage}</span>}
-        {/* Category */}
-        <p className="text-[10px] font-bold text-[#1b88f3] uppercase tracking-[0.15em]">
-          {product.category} {product.subCategory ? `· ${product.subCategory}` : ''}
-        </p>
-
-        {/* Product Name */}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#1b88f3] transition-colors">
-          {product.name}
-        </h3>
-
-        {Number(product.rating) > 0 && (
-          <div className="flex items-center gap-1 text-xs" aria-label={`Rated ${product.rating} out of 5`}>
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="font-semibold text-gray-700">{Number(product.rating).toFixed(1)}</span>
-            <span className="text-gray-400">/ 5</span>
-          </div>
-        )}
-
-        {/* Weight & Material */}
-        <div className="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
-          {product.weight > 0 && <span>{product.weight} {product.weightUnit}</span>}
-          {product.weight > 0 && product.material && <span>·</span>}
-          {product.material && <span>{product.material}</span>}
-          {product.hallmark && (
-            <>
-              <span>·</span>
-              <span className="text-emerald-600 flex items-center gap-0.5">
-                <ShieldCheck className="w-3 h-3" /> Hallmarked
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="flex items-end gap-2 pt-1">
-          <span className="text-lg font-black text-gray-900">
-            {formatPrice(product.offerPrice > 0 ? product.offerPrice : product.price)}
-          </span>
-          {product.offerPrice > 0 && product.offerPrice < product.price && (
-            <span className="text-xs text-gray-400 line-through font-medium pb-0.5">
-              {formatPrice(product.price)}
-            </span>
-          )}
-        </div>
-
-        {/* Stock Indicator */}
-        {product.stock <= 5 && product.stock > 0 && (
-          <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider">Only {product.stock} left!</p>
-        )}
-        {product.stock === 0 && (
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Out of Stock</p>
-        )}
-      </div>
-    </Link>
+    </article>
     {isQuickViewOpen && (
       <div
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"

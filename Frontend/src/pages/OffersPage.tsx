@@ -210,11 +210,11 @@ function OffersPage() {
                   </Link>
                 </div>
                 {loading ? (
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                     {Array.from({ length: 5 }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-xl bg-brand-100" />)}
                   </div>
                 ) : collection.length ? (
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                     {collection.map((product, index) => (
                       <ProductCard key={product.productId} product={product} index={index} showCollectionBadges={false} />
                     ))}

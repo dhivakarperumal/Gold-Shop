@@ -122,11 +122,11 @@ export default function Products({
                     </a>
                   </div>
                   {loading ? (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                       {[...Array(5)].map((_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
                     </div>
                   ) : collectionProducts.length ? (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                       {collectionProducts.map((product, index) => (
                         <ProductCard key={product.productId} product={product} index={index} />
                       ))}

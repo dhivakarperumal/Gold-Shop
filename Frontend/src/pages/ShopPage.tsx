@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Filter, Heart, LayoutGrid, List, ShoppingCart, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
-import type { Product } from '../components/CommonComponents/ProductCard';
+import { ProductCard, type Product } from '../components/CommonComponents/ProductCard';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import type { Category } from '../lib/categoryData';
 import type { CartProduct } from '../context/StoreCartContext';
@@ -449,7 +449,7 @@ function ShopPage() {
             <div className="mt-8">
               {loading ? (
                 viewMode === 'cards' ? (
-                  <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${isDesktopFiltersOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-5'}`}>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {Array.from({ length: pageSize }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
                   </div>
                 ) : (
@@ -463,58 +463,10 @@ function ShopPage() {
                 </div>
               ) : visibleProducts.length ? (
                 viewMode === 'cards' ? (
-                  <div className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${isDesktopFiltersOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-5'}`}>
-                    {visibleProducts.map((product) => {
-                      const image = productImage(product);
-                      return (
-                        <article key={product.productId} className="group overflow-hidden rounded-lg border border-[#eee3d6] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
-                        <Link to={`/product/${product.productId}`} className="relative block aspect-square overflow-hidden bg-[#fff9f0]">
-                          {image ? (
-                            <img src={image} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                          ) : (
-                            <img src={imageAsset(1)} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
-                          )}
-                          {(product.newArrival || product.bestSeller || product.discount > 0) && (
-                            <span className="absolute left-2 top-2 rounded-sm bg-[#f0a616] px-1.5 py-1 text-[9px] font-bold text-[#35110c]">
-                              {product.discount > 0 ? `${product.discount}% OFF` : product.newArrival ? 'New' : 'Best Seller'}
-                            </span>
-                          )}
-                        </Link>
-                        <div className="p-2 sm:p-3">
-                          <p className="truncate text-[9px] text-gray-500">{product.purity}{product.weight ? ` · ${product.weight} ${product.weightUnit || 'g'}` : ''}</p>
-                          <Link to={`/product/${product.productId}`} className="mt-1 block min-h-8 text-xs font-semibold leading-4 text-[#301414] hover:text-[#74180f] sm:text-sm">
-                            {product.name}
-                          </Link>
-                          <p className="mt-1 text-sm font-extrabold text-[#74180f]">{formatPrice(priceOf(product))}</p>
-                          {product.offerPrice > 0 && product.offerPrice < product.price && (
-                            <p className="text-[10px] text-gray-400 line-through">{formatPrice(product.price)}</p>
-                          )}
-                          <div className="mt-2 flex items-center gap-1">
-                            <Link to={`/product/${product.productId}`} className="flex-1 rounded bg-[#5a1112] px-2 py-1.5 text-center text-[10px] font-bold text-white transition hover:bg-[#3f0b0c]">
-                              View Details
-                            </Link>
-                            <button
-                              type="button"
-                              aria-label={`Add ${product.name} to cart`}
-                              onClick={() => handleAddToCart(product)}
-                              className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]"
-                            >
-                              <ShoppingCart className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              aria-label={`${hasItem(product.productId) ? 'Remove' : 'Add'} ${product.name} ${hasItem(product.productId) ? 'from' : 'to'} wishlist`}
-                              aria-pressed={hasItem(product.productId)}
-                              onClick={() => toggleWishlist(product)}
-                              className={`rounded border border-[#eadbc9] p-1.5 hover:bg-[#fff4e5] ${hasItem(product.productId) ? 'text-red-600' : 'text-[#74180f]'}`}
-                            >
-                              <Heart className={`h-3.5 w-3.5 ${hasItem(product.productId) ? 'fill-current' : ''}`} />
-                            </button>
-                          </div>
-                        </div>
-                        </article>
-                      );
-                    })}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {visibleProducts.map((product, index) => (
+                      <ProductCard key={product.productId} product={product} index={index} />
+                    ))}
                   </div>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-[#eadbc9] bg-white">

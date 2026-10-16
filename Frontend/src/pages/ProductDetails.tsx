@@ -400,7 +400,7 @@ export function ProductDetails() {
               <Link to="/shop" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#74180f] hover:text-[#ad7929] sm:text-sm">View All <ArrowRight className="h-4 w-4" /></Link>
             </div>
             {(cartError || relatedCartMessage) && <p role={cartError ? 'alert' : 'status'} className="mb-3 text-sm font-medium text-[#5a1112]">{cartError || relatedCartMessage}</p>}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
               {relatedProducts.map((relatedProduct) => {
                 const image = relatedProduct.images?.[0] || null;
                 const price = Number(relatedProduct.offerPrice) > 0 ? Number(relatedProduct.offerPrice) : Number(relatedProduct.price);
