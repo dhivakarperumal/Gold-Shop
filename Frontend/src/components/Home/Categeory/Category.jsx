@@ -48,7 +48,7 @@ export default function Category({ categories, products, onSelectCategory }) {
             <Flower2 className="h-5 w-5" strokeWidth={1.7} aria-hidden="true" />
             <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#d69a36]" />
           </div>
-          <h2 className="font-serif text-3xl font-bold leading-tight text-[#1d2934] sm:text-4xl lg:text-5xl">
+          <h2 className="font-serif text-2xl font-bold leading-tight text-[#1d2934] sm:text-3xl lg:text-4xl">
             Explore Our <span className="text-[#851b25]">Jewellery Collections</span>
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-xs text-gray-600 sm:text-base">
