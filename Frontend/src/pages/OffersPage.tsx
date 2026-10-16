@@ -53,54 +53,6 @@ function getBannerImage(source?: string) {
   return `${BACKEND_BASE_URL}${source.startsWith('/') ? source : `/${source}`}`;
 }
 
-function getProductImage(product: OfferProduct) {
-  const image = product.images?.[0];
-  if (!image) return '';
-  if (/^(https?:|data:|blob:)/i.test(image)) return image;
-  return `${BACKEND_BASE_URL}${image.startsWith('/') ? image : `/${image}`}`;
-}
-
-function OfferProductCard({ product }: { product: OfferProduct }) {
-  const shownPrice = Number(product.offerPrice > 0 ? product.offerPrice : product.price) || 0;
-  const originalPrice = Number(product.price) || 0;
-  const image = getProductImage(product);
-
-  const formatPrice = (price: number) => new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(price);
-
-  return (
-    <article className="overflow-hidden rounded-lg border border-[#eadfd1] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
-      <Link to={`/product/${product.productId}`} className="relative block aspect-square overflow-hidden bg-[#fff8ec]">
-        <img src={image || imageAsset(10)} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
-        <span className="absolute left-2 top-2 rounded-sm bg-[#b5121b] px-2 py-1 text-[9px] font-extrabold text-white">
-          {product.discount > 0 ? `${product.discount}% OFF` : 'SPECIAL OFFER'}
-        </span>
-      </Link>
-      <div className="p-2.5">
-        <p className="truncate text-[9px] text-gray-500">{product.purity}{product.weight ? ` · ${product.weight} ${product.weightUnit || 'g'}` : ''}</p>
-        <Link to={`/product/${product.productId}`} className="mt-1 block min-h-8 text-xs font-bold leading-4 text-[#351414] hover:text-[#74180f]">
-          {product.name}
-        </Link>
-        <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
-          <span className="text-sm font-extrabold text-[#74180f]">{formatPrice(shownPrice)}</span>
-          {originalPrice > shownPrice && <span className="text-[10px] text-gray-400 line-through">{formatPrice(originalPrice)}</span>}
-        </div>
-        <div className="mt-2 flex gap-1">
-          <Link to={`/product/${product.productId}`} className="flex-1 rounded bg-[#5a1112] px-2 py-1.5 text-center text-[10px] font-bold text-white hover:bg-[#3f0b0c]">
-            Shop Offer
-          </Link>
-          <span className="flex items-center rounded border border-[#eadfd1] px-2 text-[9px] font-bold text-[#825215]">
-            {product.stock > 0 ? 'In stock' : 'Sold out'}
-          </span>
-        </div>
-      </div>
-    </article>
-  );
-}
-
 function OffersPage() {
   const [products, setProducts] = useState<OfferProduct[]>([]);
   const [banners, setBanners] = useState<BannerOffer[]>([]);
@@ -173,10 +125,6 @@ function OffersPage() {
       />
 
       <main className="mx-auto max-w-[1700px] px-[6%] py-3 sm:px-[5%] lg:px-[3%]">
-        <nav aria-label="Breadcrumb" className="mb-3 flex gap-2 text-[10px] text-gray-500">
-          <Link to="/" className="hover:text-[#74180f]">Home</Link><span aria-hidden="true">›</span><span>Offers</span>
-        </nav>
-
         <section aria-label="Featured promotions" className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           {offerTiles.map((offer) => (
             <Link key={offer.id} to={offer.link} className="group relative isolate flex min-h-[105px] items-center overflow-hidden rounded-md bg-[#350c0b] p-3 text-white sm:min-h-[125px] sm:p-4">
@@ -189,6 +137,62 @@ function OffersPage() {
               </div>
             </Link>
           ))}
+        </section>
+
+        <section aria-labelledby="featured-offers-heading" className="my-5 rounded-2xl border border-[#ead8bf] bg-gradient-to-b from-[#fffaf1] to-[#fffdf9] p-3 shadow-[0_8px_28px_rgba(91,48,15,0.06)] sm:my-7 sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 border-b border-[#ead8bf] pb-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.22em] text-[#a66b1a] sm:text-[10px]">
+                <Gift className="h-3.5 w-3.5" aria-hidden="true" /> Limited-time savings
+              </p>
+              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <h2 id="featured-offers-heading" className="font-serif text-xl font-bold text-[#4b1715] sm:text-2xl">Featured Offers</h2>
+                {!loading && !loadError && (
+                  <span className="text-[10px] font-medium text-[#8b7562] sm:text-xs">
+                    {offerProducts.length} {offerProducts.length === 1 ? 'deal' : 'deals'} available
+                  </span>
+                )}
+              </div>
+            </div>
+            <div aria-label="Filter featured offers" className="flex max-w-full gap-1.5 overflow-x-auto pb-1 lg:flex-wrap lg:justify-end">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  aria-pressed={activeFilter === filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[9px] font-semibold transition-colors sm:text-[10px] ${activeFilter === filter ? 'border-[#5a1112] bg-[#5a1112] text-white shadow-sm' : 'border-[#eadfd1] bg-white text-[#594943] hover:border-[#b88836] hover:bg-[#fff7e8]'}`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }, (_, index) => <div key={index} className="aspect-[3/4] animate-pulse rounded-xl border border-[#ead8bf] bg-white" />)}
+            </div>
+          ) : loadError ? (
+            <div role="alert" className="rounded-xl border border-red-100 bg-white px-4 py-10 text-center text-sm text-red-700">
+              Offers could not be loaded. Please try again later.
+            </div>
+          ) : offerProducts.length ? (
+            <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {offerProducts.map((product, index) => (
+                <ProductCard key={product.productId} product={product} index={index} showCollectionBadges={false} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-[#dfc7a7] bg-white px-4 py-10 text-center">
+              <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#fff4df] text-[#9b681e]">
+                <Gift className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <p className="mt-3 font-serif text-lg font-bold text-[#4b1715]">No featured offers right now</p>
+              <p className="mt-1 text-xs text-gray-500">Try another category or browse the full jewellery collection.</p>
+              <Link to="/shop" className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#5a1112] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#3f0b0c]">Browse Jewellery <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </div>
+          )}
         </section>
 
         <section aria-label="Shop featured product collections" className="space-y-10 py-6 sm:py-8">
@@ -228,42 +232,6 @@ function OffersPage() {
               </section>
             );
           })}
-        </section>
-
-        <section className="py-4 sm:py-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#a66b1a]">Limited-time savings</p>
-              <h2 className="font-serif text-xl font-bold text-[#4b1715] sm:text-2xl">Featured Offers</h2>
-            </div>
-            <div className="flex max-w-full gap-1.5 overflow-x-auto pb-1">
-              {filters.map((filter) => (
-                <button key={filter} type="button" onClick={() => setActiveFilter(filter)} className={`shrink-0 rounded-md border px-2.5 py-1.5 text-[9px] font-semibold transition sm:text-[10px] ${activeFilter === filter ? 'border-[#5a1112] bg-[#5a1112] text-white' : 'border-[#eadfd1] bg-white text-gray-700 hover:border-[#b88836]'}`}>
-                  {filter}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-              {Array.from({ length: 7 }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-lg bg-brand-100" />)}
-            </div>
-          ) : loadError ? (
-            <div role="alert" className="rounded-lg border border-red-100 bg-white py-10 text-center text-sm text-red-700">
-              Offers could not be loaded. Please try again later.
-            </div>
-          ) : offerProducts.length ? (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-              {offerProducts.map((product) => <OfferProductCard key={product.productId} product={product} />)}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-[#eadfd1] bg-white py-9 text-center">
-              <p className="font-serif text-lg font-bold text-[#4b1715]">No featured offers right now</p>
-              <p className="mt-1 text-xs text-gray-500">Explore our jewellery collection and check back for new offers.</p>
-              <Link to="/shop" className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#5a1112] px-4 py-2 text-xs font-bold text-white hover:bg-[#3f0b0c]">Browse Jewellery <ArrowRight className="h-3.5 w-3.5" /></Link>
-            </div>
-          )}
         </section>
 
         <section className="grid gap-2 pb-5 sm:grid-cols-2">
