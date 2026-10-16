@@ -15,6 +15,7 @@ const bannerRoutes = require('./src/routers/bannerRoutes');
 const cartRoutes = require('./src/routers/cartRoutes');
 const addressRoutes = require('./src/routers/addressRoutes');
 const orderRoutes = require('./src/routers/orderRoutes');
+const wishlistRoutes = require('./src/routers/wishlistRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,7 @@ app.use('/api/banners', bannerRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Start server
 app.listen(PORT, async () => {

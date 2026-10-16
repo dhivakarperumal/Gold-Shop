@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ShoppingCart, Heart, User, LogOut, Settings, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import PageContainer from './PageContainer.jsx';
 import { useStoreCart } from '../../context/useStoreCart';
+import { useWishlist } from '../../context/useWishlist';
 import api from '../../api';
 import type { Category } from '../../lib/categoryData';
 
@@ -18,6 +19,7 @@ export default function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { itemCount } = useStoreCart();
+  const { itemCount: wishlistCount } = useWishlist();
   const isHomeActive = location.pathname === '/' && !location.hash;
   const isAboutActive = location.pathname === '/about';
   const isShopActive = location.pathname === '/shop';
@@ -144,10 +146,10 @@ export default function Header() {
       {/* Right: Icons & Profile */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* Cart & Fav Icons */}
-        <button aria-label="Wishlist" className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
+        <Link to="/wishlist" aria-label={`Wishlist, ${wishlistCount} ${wishlistCount === 1 ? 'item' : 'items'}`} className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
           <Heart className="w-5 h-5" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">0</span>
-        </button>
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">{wishlistCount}</span>
+        </Link>
         <Link to="/cart" aria-label={`Shopping cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`} className="relative flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-secondary sm:h-9 sm:w-9">
           <ShoppingCart className="w-5 h-5" />
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#5a1112] text-[9px] font-bold text-white">{itemCount}</span>

@@ -8,6 +8,7 @@ import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import type { Category } from '../lib/categoryData';
 import type { CartProduct } from '../context/StoreCartContext';
 import { useStoreCart } from '../context/useStoreCart';
+import { useWishlist } from '../context/useWishlist';
 
 type CatalogProduct = Product & {
   gender?: string;
@@ -97,6 +98,7 @@ function FilterGroup({
 function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addItem, error: cartError } = useStoreCart();
+  const { hasItem, toggleItem, error: wishlistError } = useWishlist();
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,9 +248,26 @@ function ShopPage() {
       stock: Number(product.stock) || 0,
       image: image || imageAsset(1),
     };
+
     setCartMessage(await addItem(cartProduct)
       ? `${product.name} added to your cart.`
       : `${product.name} is out of stock or at its available quantity limit.`);
+  };
+
+  const toggleWishlist = (product: CatalogProduct) => {
+    const image = productImage(product);
+    void toggleItem({
+      id: product.productId,
+      name: product.name,
+      category: product.category,
+      purity: product.purity,
+      weight: Number(product.weight) || 0,
+      weightUnit: product.weightUnit || 'g',
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: image || imageAsset(1),
+    });
   };
 
   const filtersPanel = (
@@ -482,8 +501,14 @@ function ShopPage() {
                             >
                               <ShoppingCart className="h-3.5 w-3.5" />
                             </button>
-                            <button type="button" aria-label={`Add ${product.name} to wishlist`} className="rounded border border-[#eadbc9] p-1.5 text-[#74180f] hover:bg-[#fff4e5]">
-                              <Heart className="h-3.5 w-3.5" />
+                            <button
+                              type="button"
+                              aria-label={`${hasItem(product.productId) ? 'Remove' : 'Add'} ${product.name} ${hasItem(product.productId) ? 'from' : 'to'} wishlist`}
+                              aria-pressed={hasItem(product.productId)}
+                              onClick={() => toggleWishlist(product)}
+                              className={`rounded border border-[#eadbc9] p-1.5 hover:bg-[#fff4e5] ${hasItem(product.productId) ? 'text-red-600' : 'text-[#74180f]'}`}
+                            >
+                              <Heart className={`h-3.5 w-3.5 ${hasItem(product.productId) ? 'fill-current' : ''}`} />
                             </button>
                           </div>
                         </div>
@@ -532,6 +557,15 @@ function ShopPage() {
                               >
                                 <ShoppingCart className="h-3.5 w-3.5" />
                               </button>
+                              <button
+                                type="button"
+                                aria-label={`${hasItem(product.productId) ? 'Remove' : 'Add'} ${product.name} ${hasItem(product.productId) ? 'from' : 'to'} wishlist`}
+                                aria-pressed={hasItem(product.productId)}
+                                onClick={() => toggleWishlist(product)}
+                                className={`rounded border border-[#eadbc9] p-2 hover:bg-[#fff4e5] ${hasItem(product.productId) ? 'text-red-600' : 'text-[#74180f]'}`}
+                              >
+                                <Heart className={`h-3.5 w-3.5 ${hasItem(product.productId) ? 'fill-current' : ''}`} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -549,7 +583,7 @@ function ShopPage() {
               )}
             </div>
 
-            {(cartError || cartMessage) && <p role={cartError ? 'alert' : 'status'} className="mt-3 text-xs font-semibold text-[#5a1112]">{cartError || cartMessage}</p>}
+            {(cartError || wishlistError || cartMessage) && <p role={cartError || wishlistError ? 'alert' : 'status'} className="mt-3 text-xs font-semibold text-[#5a1112]">{cartError || wishlistError || cartMessage}</p>}
 
             {!loading && filteredProducts.length > pageSize && (
               <nav aria-label="Shop pages" className="mt-5 flex items-center justify-center gap-1">

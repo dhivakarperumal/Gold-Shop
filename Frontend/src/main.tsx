@@ -44,6 +44,8 @@ import ContactPage from "./pages/ContactPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import AccountPage from "./pages/AccountPage";
+import WishlistPage from "./pages/WishlistPage";
+import { WishlistProvider } from "./context/WishlistContext";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -57,6 +59,7 @@ const router = createBrowserRouter([
       { path: "offers", element: <OffersPage /> },
       { path: "contact", element: <ContactPage /> },
       { path: "cart", element: <CartPage /> },
+      { path: "wishlist", element: <WishlistPage /> },
       { path: "checkout", element: <CheckoutPage /> },
       {
         path: "account",
@@ -143,10 +146,12 @@ createRoot(document.getElementById("root")!).render(
     <AuthProvider>
       <StoreCartProvider>
         <DataProvider>
-          <Toaster />
-          <React.Suspense fallback={<Loader />}>
-            <RouterProvider router={router} />
-          </React.Suspense>
+          <WishlistProvider>
+            <Toaster />
+            <React.Suspense fallback={<Loader />}>
+              <RouterProvider router={router} />
+            </React.Suspense>
+          </WishlistProvider>
         </DataProvider>
       </StoreCartProvider>
     </AuthProvider>

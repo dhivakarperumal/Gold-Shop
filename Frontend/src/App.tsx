@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./components/CommonComponents/Navbar";
 import Header from "./components/CommonComponents/Header";
 import Footer from "./components/CommonComponents/Footer";
+import FloatingSupport from "./components/CommonComponents/FloatingSupport.tsx";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Outlet />
       </main>
       <Footer />
+      <FloatingSupport />
     </div>
   );
 }

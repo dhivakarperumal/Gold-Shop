@@ -7,6 +7,7 @@ import PageContainer from '../components/CommonComponents/PageContainer.jsx';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 import type { CartProduct } from '../context/StoreCartContext';
 import { useStoreCart } from '../context/useStoreCart';
+import { useWishlist } from '../context/useWishlist';
 
 type ProductDetailsRecord = Product & {
   sku?: string;
@@ -36,6 +37,8 @@ export function ProductDetails() {
   const [cartMessage, setCartMessage] = useState('');
   const [relatedCartMessage, setRelatedCartMessage] = useState('');
   const { addItem, error: cartError } = useStoreCart();
+  const { hasItem, toggleItem, error: wishlistError } = useWishlist();
+  const isWished = product ? hasItem(String(product.productId)) : false;
 
   useEffect(() => {
     const fetchProductAndRelated = async () => {
@@ -121,6 +124,7 @@ export function ProductDetails() {
       stock: Number(product.stock) || 0,
       image: getImageUrl(images[0]),
     };
+
     if (await addItem(cartProduct, quantity)) {
       setCartMessage(`${cartProduct.name} added to your cart.`);
       return true;
@@ -128,6 +132,21 @@ export function ProductDetails() {
       setCartMessage('This item is out of stock or the selected quantity exceeds available stock.');
       return false;
     }
+  };
+
+  const toggleProductWishlist = () => {
+    toggleItem({
+      id: String(product.productId),
+      name: String(product.name),
+      category: String(product.category || ''),
+      purity: String(product.purity || ''),
+      weight: Number(product.weight) || 0,
+      weightUnit: String(product.weightUnit || 'g'),
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: getImageUrl(product.images?.[0] || null),
+    });
   };
 
   const handleBuyNow = async () => {
@@ -221,8 +240,8 @@ export function ProductDetails() {
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#ad7929]">{product.category}{product.subCategory ? ` · ${product.subCategory}` : ''}</p>
                 <h1 className="font-serif text-2xl font-bold leading-tight text-[#281a18] sm:text-3xl">{product.name}</h1>
               </div>
-              <button type="button" aria-label="Add to wishlist" className="rounded-full border border-[#eadfd2] bg-white p-2.5 text-[#74180f] transition hover:border-[#b98531] hover:bg-[#fff8ec]">
-                <Heart className="h-5 w-5" />
+              <button type="button" onClick={toggleProductWishlist} aria-label={`${isWished ? 'Remove' : 'Add'} ${product.name} ${isWished ? 'from' : 'to'} wishlist`} aria-pressed={isWished} className="rounded-full border border-[#eadfd2] bg-white p-2.5 text-[#74180f] transition hover:border-[#b98531] hover:bg-[#fff8ec]">
+                <Heart className={`h-5 w-5 ${isWished ? 'fill-current text-red-600' : ''}`} />
               </button>
             </div>
 
@@ -287,11 +306,11 @@ export function ProductDetails() {
               <button type="button" onClick={handleBuyNow} disabled={product.stock <= 0} className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#b98531] bg-white px-4 text-sm font-bold text-[#9c6a27] transition hover:bg-[#fff8ec] disabled:cursor-not-allowed disabled:opacity-50">
                 <ArrowRight className="h-4 w-4" /> Buy Now
               </button>
-              <button type="button" onClick={addProductToCart} disabled={product.stock <= 0} aria-label="Add to wishlist" className="hidden h-12 items-center justify-center rounded-lg border border-[#eadfd2] px-4 text-[#5a1112] hover:bg-[#fff8ec] disabled:opacity-50 sm:flex lg:hidden">
-                <Heart className="h-5 w-5" />
+              <button type="button" onClick={toggleProductWishlist} aria-label={`${isWished ? 'Remove' : 'Add'} ${product.name} ${isWished ? 'from' : 'to'} wishlist`} aria-pressed={isWished} className="hidden h-12 items-center justify-center rounded-lg border border-[#eadfd2] px-4 text-[#5a1112] hover:bg-[#fff8ec] sm:flex lg:hidden">
+                <Heart className={`h-5 w-5 ${isWished ? 'fill-current text-red-600' : ''}`} />
               </button>
             </div>
-            {(cartError || cartMessage) && <p role={cartError ? 'alert' : 'status'} className="mt-2 text-sm font-medium text-[#5a1112]">{cartError || cartMessage}</p>}
+            {(cartError || cartMessage || wishlistError) && <p role={cartError || wishlistError ? 'alert' : 'status'} className="mt-2 text-sm font-medium text-[#5a1112]">{cartError || wishlistError || cartMessage}</p>}
 
             <div className="mt-6 grid grid-cols-3 divide-x divide-[#f0e5d5] border-t border-[#f0e5d5] pt-5 text-center">
               <div className="px-2"><BadgeCheck className="mx-auto h-6 w-6 text-[#c18b2c]" /><p className="mt-2 text-[10px] font-bold text-[#4b1715] sm:text-xs">Hallmarked</p><p className="mt-0.5 text-[9px] text-gray-500 sm:text-[10px]">Certified purity</p></div>

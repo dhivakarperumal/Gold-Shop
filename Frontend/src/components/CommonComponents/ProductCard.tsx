@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Heart, Star, Sparkles, Gem, Eye, ShoppingBag } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Heart, Star, Sparkles, Gem, Eye, ShoppingBag, X } from 'lucide-react';
 import type { CartProduct } from '../../context/StoreCartContext';
 import { useStoreCart } from '../../context/useStoreCart';
+import { useWishlist } from '../../context/useWishlist';
 
 export interface Product {
   id: number;
@@ -37,11 +38,15 @@ interface ProductCardProps {
   toggleWishlist?: (id: string) => void;
 }
 
-export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWishlist }: ProductCardProps) {
+export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const quickViewCloseButton = useRef<HTMLButtonElement>(null);
   const { addItem, error: cartError } = useStoreCart();
-  const isWished = wishlist.has(product.productId);
+  const wishlistContext = useWishlist();
+  const { error: wishlistError } = wishlistContext;
+  const isWished = wishlist?.has(product.productId) ?? wishlistContext.hasItem(product.productId);
   const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
 
   const formatPrice = (price: number) => {
@@ -62,9 +67,40 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
   const imgSrc = getProductImage(product);
 
+  useEffect(() => {
+    if (!isQuickViewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    quickViewCloseButton.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsQuickViewOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isQuickViewOpen]);
+
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (toggleWishlist) toggleWishlist(product.productId);
+    e.stopPropagation();
+    if (toggleWishlist) {
+      toggleWishlist(product.productId);
+      return;
+    }
+    wishlistContext.toggleItem({
+      id: product.productId,
+      name: product.name,
+      category: product.category,
+      purity: product.purity,
+      weight: Number(product.weight) || 0,
+      weightUnit: product.weightUnit || 'g',
+      price: Number(product.price) || 0,
+      offerPrice: Number(product.offerPrice) || 0,
+      stock: Number(product.stock) || 0,
+      image: imgSrc || '',
+    });
   };
 
   const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,6 +124,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
   };
 
   return (
+    <>
     <Link
       to={`/product/${product.productId}`}
       className="group relative block bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-amber-100/50 transition-all duration-500 hover:-translate-y-2"
@@ -133,7 +170,10 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
         {/* Wishlist Button */}
         <button
+          type="button"
           onClick={handleWishlist}
+          aria-label={`${isWished ? 'Remove' : 'Add'} ${product.name} ${isWished ? 'from' : 'to'} wishlist`}
+          aria-pressed={isWished}
           className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-lg ${isWished
               ? 'bg-red-500 text-white scale-110'
               : 'bg-white/80 text-gray-500 hover:bg-red-50 hover:text-red-500'
@@ -144,7 +184,16 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
         {/* Quick Actions on Hover */}
         <div className={`absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <button onClick={(e) => e.preventDefault()} className="flex-1 bg-white/95 backdrop-blur-sm text-gray-800 text-xs font-bold py-2.5 rounded-xl hover:bg-[#1b88f3] hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setIsQuickViewOpen(true);
+            }}
+            aria-label={`Quick view ${product.name}`}
+            className="flex-1 bg-[#5a1112] text-white text-xs font-bold py-2.5 rounded-xl hover:bg-[#ad7929] hover:text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg"
+          >
             <Eye className="w-3.5 h-3.5" /> Quick View
           </button>
           <button
@@ -171,7 +220,7 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
 
       {/* Card Content */}
       <div className="p-4 space-y-2.5">
-        {(cartError || cartMessage) && <span role={cartError ? 'alert' : 'status'} className="sr-only">{cartError || cartMessage}</span>}
+        {(cartError || wishlistError || cartMessage) && <span role={cartError || wishlistError ? 'alert' : 'status'} className="sr-only">{cartError || wishlistError || cartMessage}</span>}
         {/* Category */}
         <p className="text-[10px] font-bold text-[#1b88f3] uppercase tracking-[0.15em]">
           {product.category} {product.subCategory ? `· ${product.subCategory}` : ''}
@@ -226,5 +275,101 @@ export function ProductCard({ product, index = 0, wishlist = new Set(), toggleWi
         )}
       </div>
     </Link>
+    {isQuickViewOpen && (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setIsQuickViewOpen(false);
+        }}
+      >
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`quick-view-title-${product.productId}`}
+          className="relative grid max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl sm:grid-cols-2"
+        >
+          <button
+            ref={quickViewCloseButton}
+            type="button"
+            onClick={() => setIsQuickViewOpen(false)}
+            aria-label="Close quick view"
+            className="absolute right-3 top-3 z-10 rounded-full bg-white/95 p-2 text-gray-700 shadow transition hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <div className="relative flex min-h-64 items-center justify-center bg-[#fff8ed] sm:min-h-[420px]">
+            {imgSrc ? (
+              <img src={imgSrc} alt={product.name} className="h-full max-h-[45vh] w-full object-contain sm:max-h-[560px]" />
+            ) : (
+              <Gem className="h-20 w-20 text-amber-300/70" aria-hidden="true" />
+            )}
+          </div>
+          <div className="flex flex-col p-5 sm:p-7">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#ad7929]">
+              {product.category}{product.subCategory ? ` · ${product.subCategory}` : ''}
+            </p>
+            <h2 id={`quick-view-title-${product.productId}`} className="mt-2 font-serif text-2xl font-bold text-[#381413]">
+              {product.name}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
+              {product.purity && <span className="rounded-full bg-[#fff8ec] px-3 py-1">{product.purity}</span>}
+              {product.weight > 0 && <span className="rounded-full bg-[#fff8ec] px-3 py-1">{product.weight} {product.weightUnit || 'g'}</span>}
+              {product.material && <span className="rounded-full bg-[#fff8ec] px-3 py-1">{product.material}</span>}
+              {product.hallmark && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700"><ShieldCheck className="h-3.5 w-3.5" /> Hallmarked</span>}
+            </div>
+            <p className="mt-4 line-clamp-4 text-sm leading-6 text-gray-600">
+              {product.description || 'Discover this finely crafted jewellery design from our collection.'}
+            </p>
+            <div className="mt-5 flex items-baseline gap-3">
+              <span className="text-2xl font-black text-[#74180f]">
+                {formatPrice(product.offerPrice > 0 ? product.offerPrice : product.price)}
+              </span>
+              {product.offerPrice > 0 && product.offerPrice < product.price && (
+                <span className="text-sm text-gray-400 line-through">{formatPrice(product.price)}</span>
+              )}
+            </div>
+            <p className={`mt-2 text-xs font-semibold ${product.stock > 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+              {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
+            </p>
+            {(cartError || wishlistError || cartMessage) && (
+              <p role={cartError || wishlistError ? 'alert' : 'status'} className="mt-3 text-xs font-medium text-[#5a1112]">
+                {cartError || wishlistError || cartMessage}
+              </p>
+            )}
+            <div className="mt-auto grid gap-2 pt-6">
+              <button
+                type="button"
+                disabled={product.stock <= 0}
+                onClick={(event) => void handleAddToCart(event)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5a1112] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#74180f] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <ShoppingBag className="h-4 w-4" /> Add to cart
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    handleWishlist(event);
+                  }}
+                  aria-pressed={isWished}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#eadbc9] px-3 py-2.5 text-xs font-bold text-[#74180f] transition hover:bg-[#fff8ec]"
+                >
+                  <Heart className={`h-4 w-4 ${isWished ? 'fill-current text-red-600' : ''}`} />
+                  {isWished ? 'Saved' : 'Add to wishlist'}
+                </button>
+                <Link
+                  to={`/product/${product.productId}`}
+                  onClick={() => setIsQuickViewOpen(false)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#eadbc9] px-3 py-2.5 text-xs font-bold text-[#74180f] transition hover:bg-[#fff8ec]"
+                >
+                  View details <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    )}
+    </>
   );
 }

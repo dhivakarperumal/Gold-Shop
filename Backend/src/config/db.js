@@ -272,6 +272,19 @@ async function initializeDatabase() {
     console.log('Cart items table initialized');
 
     await connection.execute(`
+      CREATE TABLE IF NOT EXISTS wishlist_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        product_id VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_user_wishlist_product (user_id, product_id),
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Wishlist items table initialized');
+
+    await connection.execute(`
       CREATE TABLE IF NOT EXISTS customer_addresses (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id VARCHAR(255) NOT NULL,
