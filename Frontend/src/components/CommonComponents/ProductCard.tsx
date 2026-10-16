@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Heart, Star, Sparkles, Gem, Eye, ShoppingBag, X } from 'lucide-react';
 import type { CartProduct } from '../../context/StoreCartContext';
 import { useStoreCart } from '../../context/useStoreCart';
@@ -36,9 +36,11 @@ interface ProductCardProps {
   index?: number;
   wishlist?: Set<string>;
   toggleWishlist?: (id: string) => void;
+  showCollectionBadges?: boolean;
 }
 
-export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: ProductCardProps) {
+export function ProductCard({ product, index = 0, wishlist, toggleWishlist, showCollectionBadges = true }: ProductCardProps) {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
@@ -103,9 +105,7 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: Pr
     });
   };
 
-  const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const addProductToCart = async () => {
     const cartProduct: CartProduct = {
       id: product.productId,
       name: product.name,
@@ -118,9 +118,26 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: Pr
       stock: Number(product.stock) || 0,
       image: imgSrc || '',
     };
-    setCartMessage(await addItem(cartProduct)
+    const added = await addItem(cartProduct);
+    setCartMessage(added
       ? `${product.name} added to your cart.`
       : `${product.name} is out of stock or at its available quantity limit.`);
+    return added;
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await addProductToCart();
+  };
+
+  const handleBuyNow = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (await addProductToCart()) {
+      setIsQuickViewOpen(false);
+      navigate('/checkout');
+    }
   };
 
   return (
@@ -156,12 +173,12 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: Pr
               {product.discount}% OFF
             </span>
           )}
-          {product.newArrival && (
+          {showCollectionBadges && product.newArrival && (
             <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg tracking-wide flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> NEW
             </span>
           )}
-          {product.bestSeller && (
+          {showCollectionBadges && product.bestSeller && (
             <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg tracking-wide flex items-center gap-1">
               <Star className="w-3 h-3" /> BEST
             </span>
@@ -337,14 +354,24 @@ export function ProductCard({ product, index = 0, wishlist, toggleWishlist }: Pr
               </p>
             )}
             <div className="mt-auto grid gap-2 pt-6">
-              <button
-                type="button"
-                disabled={product.stock <= 0}
-                onClick={(event) => void handleAddToCart(event)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5a1112] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#74180f] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <ShoppingBag className="h-4 w-4" /> Add to cart
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={product.stock <= 0}
+                  onClick={(event) => void handleAddToCart(event)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5a1112] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#74180f] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ShoppingBag className="h-4 w-4" /> Add to cart
+                </button>
+                <button
+                  type="button"
+                  disabled={product.stock <= 0}
+                  onClick={(event) => void handleBuyNow(event)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ad7929] px-3 py-3 text-sm font-bold text-white transition hover:bg-[#91621f] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Buy Now <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"

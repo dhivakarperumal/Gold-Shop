@@ -395,6 +395,25 @@ async function initializeDatabase() {
     console.log('Banners table initialized');
 
     await connection.execute(`
+      CREATE TABLE IF NOT EXISTS enquiries (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(254) NOT NULL,
+        phone VARCHAR(30),
+        subject VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL,
+        status ENUM('New', 'In Progress', 'Resolved', 'Closed') NOT NULL DEFAULT 'New',
+        assigned_to VARCHAR(100),
+        internal_notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_enquiries_status_created (status, created_at),
+        INDEX idx_enquiries_email (email)
+      )
+    `);
+    console.log('Enquiries table initialized');
+
+    await connection.execute(`
       CREATE TABLE IF NOT EXISTS customers (
         id INT AUTO_INCREMENT PRIMARY KEY,
         customer_id VARCHAR(100) UNIQUE NOT NULL,

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Gift, Gem, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowRight, Award, Gift, Gem, ShieldCheck, Sparkles, Star, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api, { BACKEND_BASE_URL } from '../api';
-import type { Product } from '../components/CommonComponents/ProductCard';
+import { ProductCard, type Product } from '../components/CommonComponents/ProductCard';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 
 type OfferProduct = Product & {
@@ -21,6 +21,31 @@ type BannerOffer = {
 };
 
 const imageAsset = (number: number) => `/Gold Shop Images/shopping (${number}).webp`;
+
+const productCollections = [
+  {
+    key: 'featured',
+    title: 'Featured Jewellery',
+    description: 'Handpicked jewellery and signature designs.',
+    icon: Sparkles,
+  },
+  {
+    key: 'bestSeller',
+    title: 'Best Sellers',
+    description: 'Customer favourites loved for their timeless design.',
+    icon: Award,
+  },
+  {
+    key: 'newArrival',
+    title: 'New Arrivals',
+    description: 'The latest designs, just added to our collection.',
+    icon: Star,
+  },
+] as const;
+
+function isProductFlagged(value: unknown) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
 
 function getBannerImage(source?: string) {
   if (!source) return '';
@@ -164,6 +189,45 @@ function OffersPage() {
               </div>
             </Link>
           ))}
+        </section>
+
+        <section aria-label="Shop featured product collections" className="space-y-10 py-6 sm:py-8">
+          {productCollections.map(({ key, title, description, icon: Icon }) => {
+            const collection = products.filter((product) => isProductFlagged(product[key]));
+            return (
+              <section key={key} aria-labelledby={`offers-${key}-heading`} className="scroll-mt-24">
+                <div className="mb-4 flex items-end justify-between gap-3 border-b border-[#eadfd1] pb-3">
+                  <div>
+                    <p className="mb-1 flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.24em] text-[#a66b1a]">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      Curated collection
+                    </p>
+                    <h2 id={`offers-${key}-heading`} className="font-serif text-xl font-bold text-[#4b1715] sm:text-2xl">{title}</h2>
+                    <p className="mt-1 text-xs text-gray-500">{description}</p>
+                  </div>
+                  <Link to="/shop" className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#fff2d5] px-3 py-2 text-[10px] font-bold text-[#5a1112] transition hover:bg-[#f5d995]">
+                    Shop all <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </div>
+                {loading ? (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {Array.from({ length: 5 }, (_, index) => <div key={index} className="aspect-[4/5] animate-pulse rounded-xl bg-brand-100" />)}
+                  </div>
+                ) : collection.length ? (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {collection.map((product, index) => (
+                      <ProductCard key={product.productId} product={product} index={index} showCollectionBadges={false} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-[#eadfd1] bg-white px-4 py-8 text-center">
+                    <p className="font-serif text-base font-bold text-[#4b1715]">No {title.toLowerCase()} yet</p>
+                    <p className="mt-1 text-xs text-gray-500">New designs will appear here when they are added to this collection.</p>
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </section>
 
         <section className="py-4 sm:py-5">

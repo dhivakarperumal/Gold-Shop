@@ -46,6 +46,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import AccountPage from "./pages/AccountPage";
 import WishlistPage from "./pages/WishlistPage";
 import { WishlistProvider } from "./context/WishlistContext";
+import { Enquiries } from "./Admin/Enquiries/Enquiries";
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -95,6 +96,7 @@ const router = createBrowserRouter([
       { path: "customers/new", element: <CustomerForm /> },
       { path: "customers/view/:id", element: <CustomerProfile /> },
       { path: "customers/edit/:id", element: <CustomerForm /> },
+      { path: "enquiries", element: <Enquiries /> },
       { path: "loans", element: <Loans /> },
       { path: "loans/new", element: <LoanForm /> },
       { path: "loans/release/:id", element: <GoldRelease /> },

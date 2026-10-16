@@ -73,11 +73,6 @@ function HomePage() {
   const visibleProducts = activeCategory === 'All'
     ? products
     : products.filter((product) => product.category === activeCategory);
-  const featuredProducts = products.filter((product) => product.featured);
-  const filteredFeaturedProducts = activeCategory === 'All'
-    ? featuredProducts
-    : featuredProducts.filter((product) => product.category === activeCategory);
-  const displayProducts = (filteredFeaturedProducts.length ? filteredFeaturedProducts : visibleProducts).slice(0, 6);
   const handleNewsletterSubmit = (event) => {
     event.preventDefault();
     const subject = encodeURIComponent('Newsletter subscription request');
@@ -131,8 +126,9 @@ function HomePage() {
         categories={categoryNames}
         activeCategory={activeCategory}
         onSelectCategory={setActiveCategory}
-        products={displayProducts}
+        products={visibleProducts}
         loading={loading}
+        offers={offers}
       />
 
       <section className="py-5 sm:py-8">

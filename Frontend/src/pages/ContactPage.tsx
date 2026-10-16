@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowRight, Clock3, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react';
+import api from '../api';
 import PageHeader from '../components/CommonComponents/PageHeader.jsx';
 
 const storeAddress = '18/09 Valasaravakkam, Chennai - 600087, Tamil Nadu, India';
@@ -47,21 +48,29 @@ const faqs = [
 
 export default function ContactPage() {
   const [formMessage, setFormMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
     const formData = new FormData(event.currentTarget);
     const name = String(formData.get('name') ?? '').trim();
     const email = String(formData.get('email') ?? '').trim();
     const phone = String(formData.get('phone') ?? '').trim();
     const subject = String(formData.get('subject') ?? '').trim();
     const message = String(formData.get('message') ?? '').trim();
-    const body = [`Name: ${name}`, `Email: ${email}`, phone && `Phone: ${phone}`, '', message]
-      .filter(Boolean)
-      .join('\n');
-
-    setFormMessage('Your email app should open with your message ready to send.');
-    window.location.href = `mailto:support@kanakgold.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setIsSubmitting(true);
+    setFormMessage('');
+    try {
+      const { data } = await api.post<{ message: string }>('/enquiries', { name, email, phone, subject, message });
+      setFormMessage(data.message || 'Your enquiry has been submitted. Our team will be in touch soon.');
+      form.reset();
+    } catch (error: unknown) {
+      console.error('Could not submit contact enquiry:', error);
+      setFormMessage('We could not send your enquiry. Please try again or contact us by phone or email.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -175,9 +184,10 @@ export default function ContactPage() {
               <div className="flex flex-col items-start gap-3 sm:col-span-2 sm:flex-row sm:items-center">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5a1112] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[#5a1112]/15 transition hover:bg-[#74180f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98531] focus-visible:ring-offset-2"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#5a1112] px-6 py-3 text-sm font-bold text-white shadow-md shadow-[#5a1112]/15 transition hover:bg-[#74180f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98531] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
                 >
-                  Prepare email <Send className="h-4 w-4" aria-hidden="true" />
+                  {isSubmitting ? 'Sending…' : 'Send enquiry'} <Send className="h-4 w-4" aria-hidden="true" />
                 </button>
                 {formMessage && <p role="status" className="text-xs text-[#5a1112]">{formMessage}</p>}
               </div>
